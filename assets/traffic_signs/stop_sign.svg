@@ -1,0 +1,9 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Señal de Alto -->
+  <polygon points="30,15 70,15 85,30 85,70 70,85 30,85 15,70 15,30" 
+           fill="#FF0000" stroke="#FFFFFF" stroke-width="3"/>
+  <text x="50" y="45" text-anchor="middle" fill="white" font-family="Arial, sans-serif" 
+        font-size="14" font-weight="bold">ALTO</text>
+  <text x="50" y="65" text-anchor="middle" fill="white" font-family="Arial, sans-serif" 
+        font-size="10" font-weight="bold">STOP</text>
+</svg>

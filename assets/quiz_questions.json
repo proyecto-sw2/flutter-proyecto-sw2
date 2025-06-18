@@ -1,0 +1,863 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la velocidad máxima permitida en zonas urbanas en Bolivia?",
+      "options": ["40 km/h", "50 km/h", "60 km/h", "70 km/h"],
+      "correct_answer": 1,
+      "explanation": "En zonas urbanas la velocidad máxima es de 50 km/h según el código de tránsito boliviano.",
+      "level": "basico"
+    },
+    {
+      "id": 2,
+      "type": "true_false",
+      "question": "Es obligatorio el uso del cinturón de seguridad para todos los ocupantes del vehículo.",
+      "correct_answer": true,
+      "explanation": "Sí, es obligatorio para todos los ocupantes según la ley de tránsito.",
+      "level": "basico"
+    },
+    {
+      "id": 3,
+      "type": "image_identification",
+      "question": "¿Qué significa esta señal de tránsito?",
+      "image_path": "assets/traffic_signs/stop_sign.png",
+      "options": ["Alto total", "Ceda el paso", "Prohibido el paso", "Velocidad máxima"],
+      "correct_answer": 0,
+      "explanation": "Esta señal indica alto total, todos los vehículos deben detenerse completamente.",
+      "level": "basico"
+    },
+    {
+      "id": 4,
+      "type": "multiple_choice",
+      "question": "¿Cuántos puntos se descuentan por conducir en estado de ebriedad?",
+      "options": ["50 puntos", "75 puntos", "100 puntos", "150 puntos"],
+      "correct_answer": 2,
+      "explanation": "Conducir en estado de ebriedad resulta en la pérdida de 100 puntos.",
+      "level": "intermedio"
+    },
+    {
+      "id": 5,
+      "type": "true_false",
+      "question": "Los peatones tienen preferencia de paso en los cruces peatonales.",
+      "correct_answer": true,
+      "explanation": "Los peatones siempre tienen preferencia en cruces peatonales señalizados.",
+      "level": "basico"
+    },
+    {
+      "id": 6,
+      "type": "image_identification",
+      "question": "¿Qué indica esta señal?",
+      "image_path": "assets/traffic_signs/yield_sign.png",
+      "options": ["Alto", "Ceda el paso", "Prohibido girar", "Zona escolar"],
+      "correct_answer": 1,
+      "explanation": "Esta señal triangular indica que debe ceder el paso a otros vehículos.",
+      "level": "basico"
+    },
+    {
+      "id": 7,
+      "type": "multiple_choice",
+      "question": "¿A qué distancia mínima debe colocarse el triángulo de seguridad?",
+      "options": ["30 metros", "50 metros", "75 metros", "100 metros"],
+      "correct_answer": 3,
+      "explanation": "El triángulo debe colocarse a 100 metros de distancia del vehículo.",
+      "level": "intermedio"
+    },
+    {
+      "id": 8,
+      "type": "true_false",
+      "question": "Se puede usar el teléfono celular mientras se conduce si es con manos libres.",
+      "correct_answer": true,
+      "explanation": "Sí, está permitido el uso de manos libres, pero no sostener el teléfono.",
+      "level": "intermedio"
+    },
+    {
+      "id": 9,
+      "type": "image_identification",
+      "question": "¿Qué prohíbe esta señal?",
+      "image_path": "assets/traffic_signs/no_parking.png",
+      "options": ["Estacionar", "Girar a la izquierda", "Adelantar", "Tocar bocina"],
+      "correct_answer": 0,
+      "explanation": "Esta señal prohíbe el estacionamiento en esa zona.",
+      "level": "basico"
+    },
+    {
+      "id": 10,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la edad mínima para obtener licencia de conducir categoría A?",
+      "options": ["16 años", "18 años", "21 años", "25 años"],
+      "correct_answer": 1,
+      "explanation": "La edad mínima para licencia categoría A es 18 años.",
+      "level": "basico"
+    },
+    {
+      "id": 11,
+      "type": "true_false",
+      "question": "Las motocicletas pueden circular entre carriles en el tráfico.",
+      "correct_answer": false,
+      "explanation": "No está permitido circular entre carriles, es una infracción grave.",
+      "level": "intermedio"
+    },
+    {
+      "id": 12,
+      "type": "image_identification",
+      "question": "¿Qué significa esta señal?",
+      "image_path": "assets/traffic_signs/speed_limit.png",
+      "options": ["Velocidad mínima", "Velocidad máxima", "Zona de adelantamiento", "Fin de restricción"],
+      "correct_answer": 1,
+      "explanation": "Esta señal circular indica la velocidad máxima permitida.",
+      "level": "basico"
+    },
+    {
+      "id": 13,
+      "type": "multiple_choice",
+      "question": "¿Qué documentos debe portar obligatoriamente un conductor?",
+      "options": ["Solo licencia", "Licencia y SOAT", "Licencia, SOAT y tarjeta de propiedad", "Solo SOAT"],
+      "correct_answer": 2,
+      "explanation": "Debe portar licencia, SOAT y tarjeta de propiedad del vehículo.",
+      "level": "basico"
+    },
+    {
+      "id": 14,
+      "type": "true_false",
+      "question": "Los vehículos de emergencia siempre tienen derecho de vía.",
+      "correct_answer": true,
+      "explanation": "Los vehículos de emergencia con sirenas activadas tienen prioridad absoluta.",
+      "level": "basico"
+    },
+    {
+      "id": 15,
+      "type": "image_identification",
+      "question": "¿Qué indica esta señal?",
+      "image_path": "assets/traffic_signs/school_zone.png",
+      "options": ["Zona comercial", "Zona escolar", "Zona residencial", "Zona industrial"],
+      "correct_answer": 1,
+      "explanation": "Esta señal indica zona escolar, donde hay que reducir la velocidad.",
+      "level": "basico"
+    },
+    {
+      "id": 16,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la sanción por no portar SOAT vigente?",
+      "options": ["Multa económica", "Retención del vehículo", "Pérdida de puntos", "Todas las anteriores"],
+      "correct_answer": 3,
+      "explanation": "No portar SOAT vigente conlleva multa, retención y pérdida de puntos.",
+      "level": "intermedio"
+    },
+    {
+      "id": 17,
+      "type": "true_false",
+      "question": "Se puede adelantar por la derecha en autopistas.",
+      "correct_answer": false,
+      "explanation": "El adelantamiento debe realizarse siempre por la izquierda.",
+      "level": "avanzado"
+    },
+    {
+      "id": 18,
+      "type": "image_identification",
+      "question": "¿Qué prohíbe esta señal?",
+      "image_path": "assets/traffic_signs/no_turn_left.png",
+      "options": ["Girar a la derecha", "Girar a la izquierda", "Seguir de frente", "Retroceder"],
+      "correct_answer": 1,
+      "explanation": "Esta señal prohíbe girar a la izquierda.",
+      "level": "basico"
+    },
+    {
+      "id": 19,
+      "type": "multiple_choice",
+      "question": "¿Cuándo es obligatorio encender las luces del vehículo?",
+      "options": ["Solo de noche", "De noche y con lluvia", "De noche, lluvia y niebla", "Siempre"],
+      "correct_answer": 2,
+      "explanation": "Las luces son obligatorias de noche, con lluvia, niebla o poca visibilidad.",
+      "level": "basico"
+    },
+    {
+      "id": 20,
+      "type": "true_false",
+      "question": "Los niños menores de 12 años pueden viajar en el asiento delantero.",
+      "correct_answer": false,
+      "explanation": "Los niños menores de 12 años deben viajar en el asiento trasero con sistemas de retención.",
+      "level": "basico"
+    },
+    {
+      "id": 21,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la velocidad máxima en carreteras nacionales de Bolivia?",
+      "options": ["80 km/h", "90 km/h", "100 km/h", "120 km/h"],
+      "correct_answer": 2,
+      "explanation": "En carreteras nacionales la velocidad máxima es de 100 km/h.",
+      "level": "basico"
+    },
+    {
+      "id": 22,
+      "type": "true_false",
+      "question": "En Bolivia es obligatorio tener seguro SOAT para circular.",
+      "correct_answer": true,
+      "explanation": "El SOAT es obligatorio para todos los vehículos que circulan en Bolivia.",
+      "level": "basico"
+    },
+    {
+      "id": 23,
+      "type": "multiple_choice",
+      "question": "¿Qué organismo emite las licencias de conducir en Bolivia?",
+      "options": ["Policía Nacional", "SEGIP", "Alcaldías Municipales", "Ministerio de Obras Públicas"],
+      "correct_answer": 1,
+      "explanation": "SEGIP es el organismo encargado de emitir licencias de conducir en Bolivia.",
+      "level": "intermedio"
+    },
+    {
+      "id": 24,
+      "type": "true_false",
+      "question": "Los vehículos con placas rojas pueden circular los domingos.",
+      "correct_answer": false,
+      "explanation": "Los vehículos con placas rojas (servicio público) no pueden circular los domingos.",
+      "level": "intermedio"
+    },
+    {
+      "id": 25,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la multa por exceso de velocidad en zona urbana?",
+      "options": ["200 Bs", "500 Bs", "1000 Bs", "1500 Bs"],
+      "correct_answer": 2,
+      "explanation": "La multa por exceso de velocidad en zona urbana es de 1000 Bs.",
+      "level": "avanzado"
+    },
+    {
+      "id": 26,
+      "type": "true_false",
+      "question": "En La Paz está prohibido el uso de bocina en zona central.",
+      "correct_answer": true,
+      "explanation": "En el centro de La Paz está prohibido el uso de bocina por ordenanza municipal.",
+      "level": "avanzado"
+    },
+    {
+      "id": 27,
+      "type": "multiple_choice",
+      "question": "¿Cada cuántos años se debe renovar la licencia de conducir categoría A?",
+      "options": ["2 años", "3 años", "5 años", "10 años"],
+      "correct_answer": 2,
+      "explanation": "La licencia categoría A se renueva cada 5 años.",
+      "level": "basico"
+    },
+    {
+      "id": 28,
+      "type": "true_false",
+      "question": "Los taxis pueden usar carriles exclusivos del PumaKatari.",
+      "correct_answer": false,
+      "explanation": "Los carriles del PumaKatari son exclusivos para el transporte público masivo.",
+      "level": "intermedio"
+    },
+    {
+      "id": 29,
+      "type": "multiple_choice",
+      "question": "¿Cuál es el límite de alcohol en sangre permitido para conductores?",
+      "options": ["0.0 g/l", "0.2 g/l", "0.5 g/l", "0.8 g/l"],
+      "correct_answer": 0,
+      "explanation": "En Bolivia el límite es 0.0 g/l, tolerancia cero al alcohol.",
+      "level": "basico"
+    },
+    {
+      "id": 30,
+      "type": "true_false",
+      "question": "Los motociclistas deben usar casco obligatoriamente.",
+      "correct_answer": true,
+      "explanation": "El uso de casco es obligatorio para conductores y acompañantes de motocicletas.",
+      "level": "basico"
+    },
+    {
+      "id": 31,
+      "type": "multiple_choice",
+      "question": "¿Qué significa la placa amarilla en vehículos?",
+      "options": ["Vehículo particular", "Vehículo oficial", "Vehículo de carga", "Vehículo de servicio público"],
+      "correct_answer": 3,
+      "explanation": "Las placas amarillas identifican vehículos de servicio público.",
+      "level": "avanzado"
+    },
+    {
+      "id": 32,
+      "type": "true_false",
+      "question": "Se puede estacionar en doble fila por máximo 5 minutos.",
+      "correct_answer": false,
+      "explanation": "Está prohibido estacionar en doble fila sin importar el tiempo.",
+      "level": "intermedio"
+    },
+    {
+      "id": 33,
+      "type": "multiple_choice",
+      "question": "¿Cuántos puntos tiene inicialmente una licencia nueva?",
+      "options": ["50 puntos", "100 puntos", "150 puntos", "200 puntos"],
+      "correct_answer": 2,
+      "explanation": "Una licencia nueva inicia con 150 puntos.",
+      "level": "intermedio"
+    },
+    {
+      "id": 34,
+      "type": "true_false",
+      "question": "Los vehículos eléctricos están exentos del pago de patente.",
+      "correct_answer": true,
+      "explanation": "Los vehículos eléctricos tienen exención del pago de patente en Bolivia.",
+      "level": "avanzado"
+    },
+    {
+      "id": 35,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la edad máxima para obtener licencia de conducir?",
+      "options": ["65 años", "70 años", "75 años", "No hay límite"],
+      "correct_answer": 1,
+      "explanation": "La edad máxima para obtener licencia es 70 años.",
+      "level": "intermedio"
+    },
+    {
+      "id": 36,
+      "type": "true_false",
+      "question": "Los vehículos de emergencia pueden exceder los límites de velocidad.",
+      "correct_answer": true,
+      "explanation": "Los vehículos de emergencia en servicio pueden exceder límites de velocidad.",
+      "level": "basico"
+    },
+    {
+      "id": 37,
+      "type": "multiple_choice",
+      "question": "¿Qué categoría de licencia se necesita para conducir motocicletas?",
+      "options": ["Categoría A", "Categoría B", "Categoría C", "Categoría M"],
+      "correct_answer": 3,
+      "explanation": "Para motocicletas se requiere licencia categoría M.",
+      "level": "basico"
+    },
+    {
+      "id": 38,
+      "type": "true_false",
+      "question": "Se puede circular sin placa trasera si la delantera está visible.",
+      "correct_answer": false,
+      "explanation": "Es obligatorio portar ambas placas, delantera y trasera.",
+      "level": "basico"
+    },
+    {
+      "id": 39,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la sanción por conducir sin licencia?",
+      "options": ["Multa de 500 Bs", "Multa de 1000 Bs", "Retención del vehículo", "Multa y retención"],
+      "correct_answer": 3,
+      "explanation": "Conducir sin licencia conlleva multa y retención del vehículo.",
+      "level": "avanzado"
+    },
+    {
+      "id": 40,
+      "type": "true_false",
+      "question": "Los peatones pueden cruzar por cualquier lugar de la vía.",
+      "correct_answer": false,
+      "explanation": "Los peatones deben cruzar por cruces peatonales o esquinas.",
+      "level": "intermedio"
+    },
+    {
+      "id": 41,
+      "type": "multiple_choice",
+      "question": "¿Qué distancia mínima se debe mantener con el vehículo de adelante?",
+      "options": ["2 metros", "3 metros", "5 metros", "Depende de la velocidad"],
+      "correct_answer": 3,
+      "explanation": "La distancia debe ser proporcional a la velocidad (regla de los 3 segundos).",
+      "level": "avanzado"
+    },
+    {
+      "id": 42,
+      "type": "true_false",
+      "question": "Los ciclistas deben circular por la acera.",
+      "correct_answer": false,
+      "explanation": "Los ciclistas deben circular por la calzada o ciclovías, no por aceras.",
+      "level": "basico"
+    },
+    {
+      "id": 43,
+      "type": "multiple_choice",
+      "question": "¿Cuándo se debe usar las luces intermitentes?",
+      "options": ["Al estacionar", "En emergencias", "Al cambiar de carril", "Todas las anteriores"],
+      "correct_answer": 3,
+      "explanation": "Las luces intermitentes se usan para estacionar, emergencias y cambios de carril.",
+      "level": "basico"
+    },
+    {
+      "id": 44,
+      "type": "true_false",
+      "question": "Se puede transportar carga que sobresalga del vehículo.",
+      "correct_answer": true,
+      "explanation": "Se permite si no excede los límites establecidos y está señalizada.",
+      "level": "intermedio"
+    },
+    {
+      "id": 45,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la velocidad máxima en zonas escolares?",
+      "options": ["20 km/h", "30 km/h", "40 km/h", "50 km/h"],
+      "correct_answer": 1,
+      "explanation": "En zonas escolares la velocidad máxima es 30 km/h.",
+      "level": "avanzado"
+    },
+    {
+      "id": 46,
+      "type": "true_false",
+      "question": "Los vehículos oficiales pueden estacionar en cualquier lugar.",
+      "correct_answer": false,
+      "explanation": "Los vehículos oficiales deben respetar las normas de estacionamiento.",
+      "level": "intermedio"
+    },
+    {
+      "id": 47,
+      "type": "multiple_choice",
+      "question": "¿Qué documento acredita la propiedad del vehículo?",
+      "options": ["RUAT", "Tarjeta de propiedad", "Factura de compra", "Certificado SEGIP"],
+      "correct_answer": 1,
+      "explanation": "La tarjeta de propiedad es el documento que acredita la propiedad del vehículo.",
+      "level": "avanzado"
+    },
+    {
+      "id": 48,
+      "type": "true_false",
+      "question": "Se puede conducir con licencia vencida por 30 días.",
+      "correct_answer": false,
+      "explanation": "No se puede conducir con licencia vencida, debe renovarse antes del vencimiento.",
+      "level": "avanzado"
+    },
+    {
+      "id": 49,
+      "type": "multiple_choice",
+      "question": "¿Cuántos acompañantes puede llevar una motocicleta?",
+      "options": ["Ninguno", "Uno", "Dos", "Tres"],
+      "correct_answer": 1,
+      "explanation": "Una motocicleta puede llevar máximo un acompañante.",
+      "level": "basico"
+    },
+    {
+      "id": 50,
+      "type": "true_false",
+      "question": "Los vehículos híbridos pagan menos impuestos.",
+      "correct_answer": true,
+      "explanation": "Los vehículos híbridos tienen beneficios tributarios en Bolivia.",
+      "level": "intermedio"
+    },
+    {
+      "id": 51,
+      "type": "multiple_choice",
+      "question": "¿Qué significa una línea amarilla continua?",
+      "options": ["Prohibido adelantar", "Permitido adelantar", "Carril de emergencia", "Zona de estacionamiento"],
+      "correct_answer": 0,
+      "explanation": "La línea amarilla continua prohíbe el adelantamiento.",
+      "level": "avanzado"
+    },
+    {
+      "id": 52,
+      "type": "true_false",
+      "question": "Los menores de edad pueden obtener licencia con autorización de padres.",
+      "correct_answer": false,
+      "explanation": "La edad mínima para licencia es 18 años, sin excepciones.",
+      "level": "basico"
+    },
+    {
+      "id": 53,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la multa por no usar cinturón de seguridad?",
+      "options": ["200 Bs", "500 Bs", "800 Bs", "1000 Bs"],
+      "correct_answer": 1,
+      "explanation": "La multa por no usar cinturón de seguridad es de 500 Bs.",
+      "level": "avanzado"
+    },
+    {
+      "id": 54,
+      "type": "true_false",
+      "question": "Se puede usar el celular en semáforos en rojo.",
+      "correct_answer": false,
+      "explanation": "Está prohibido usar el celular mientras se conduce, incluso en semáforos.",
+      "level": "basico"
+    },
+    {
+      "id": 55,
+      "type": "multiple_choice",
+      "question": "¿Qué categoría de licencia se necesita para vehículos de carga?",
+      "options": ["Categoría A", "Categoría B", "Categoría C", "Categoría D"],
+      "correct_answer": 2,
+      "explanation": "Para vehículos de carga se requiere licencia categoría C.",
+      "level": "intermedio"
+    },
+    {
+      "id": 56,
+      "type": "true_false",
+      "question": "Los vehículos antiguos están exentos de la revisión técnica.",
+      "correct_answer": false,
+      "explanation": "Todos los vehículos deben pasar la revisión técnica vehicular.",
+      "level": "basico"
+    },
+    {
+      "id": 57,
+      "type": "multiple_choice",
+      "question": "¿Cada cuánto tiempo se debe realizar la revisión técnica?",
+      "options": ["Cada año", "Cada 2 años", "Cada 3 años", "Cada 5 años"],
+      "correct_answer": 0,
+      "explanation": "La revisión técnica vehicular debe realizarse anualmente.",
+      "level": "basico"
+    },
+    {
+      "id": 58,
+      "type": "true_false",
+      "question": "Se puede remolcar otro vehículo con una cuerda.",
+      "correct_answer": false,
+      "explanation": "El remolque debe realizarse con equipos adecuados, no con cuerdas.",
+      "level": "intermedio"
+    },
+    {
+      "id": 59,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la edad mínima para acompañar a un conductor principiante?",
+      "options": ["21 años", "25 años", "30 años", "35 años"],
+      "correct_answer": 1,
+      "explanation": "El acompañante debe tener mínimo 25 años y licencia vigente.",
+      "level": "intermedio"
+    },
+    {
+      "id": 60,
+      "type": "true_false",
+      "question": "Los vehículos con GNV deben tener certificación especial.",
+      "correct_answer": true,
+      "explanation": "Los vehículos con GNV requieren certificación y revisión especial.",
+      "level": "intermedio"
+    },
+    {
+      "id": 61,
+      "type": "multiple_choice",
+      "question": "¿Qué significa el semáforo amarillo intermitente?",
+      "options": ["Alto total", "Precaución", "Siga", "Ceda el paso"],
+      "correct_answer": 1,
+      "explanation": "El amarillo intermitente indica precaución y reducir velocidad.",
+      "level": "basico"
+    },
+    {
+      "id": 62,
+      "type": "true_false",
+      "question": "Se puede adelantar en curvas si no viene tráfico.",
+      "correct_answer": false,
+      "explanation": "Está prohibido adelantar en curvas por falta de visibilidad.",
+      "level": "basico"
+    },
+    {
+      "id": 63,
+      "type": "multiple_choice",
+      "question": "¿Cuántos puntos se pierden por no respetar semáforo en rojo?",
+      "options": ["20 puntos", "30 puntos", "50 puntos", "75 puntos"],
+      "correct_answer": 2,
+      "explanation": "No respetar semáforo en rojo resulta en pérdida de 50 puntos.",
+      "level": "avanzado"
+    },
+    {
+      "id": 64,
+      "type": "true_false",
+      "question": "Los vehículos de transporte escolar deben tener señalización especial.",
+      "correct_answer": true,
+      "explanation": "Los vehículos escolares deben tener señalización y equipamiento especial.",
+      "level": "intermedio"
+    },
+    {
+      "id": 65,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la velocidad máxima para vehículos de carga en carretera?",
+      "options": ["60 km/h", "70 km/h", "80 km/h", "90 km/h"],
+      "correct_answer": 2,
+      "explanation": "Los vehículos de carga tienen velocidad máxima de 80 km/h en carretera.",
+      "level": "intermedio"
+    },
+    {
+      "id": 66,
+      "type": "true_false",
+      "question": "Se puede estacionar frente a hidrantes.",
+      "correct_answer": false,
+      "explanation": "Está prohibido estacionar frente a hidrantes y salidas de emergencia.",
+      "level": "basico"
+    },
+    {
+      "id": 67,
+      "type": "multiple_choice",
+      "question": "¿Qué documento se necesita para circular en otros países?",
+      "options": ["Licencia nacional", "Licencia internacional", "Pasaporte", "Tarjeta de propiedad"],
+      "correct_answer": 1,
+      "explanation": "Para circular en otros países se requiere licencia internacional.",
+      "level": "avanzado"
+    },
+    {
+      "id": 68,
+      "type": "true_false",
+      "question": "Los vehículos diplomáticos están exentos de multas de tránsito.",
+      "correct_answer": true,
+      "explanation": "Los vehículos diplomáticos tienen inmunidad según convenios internacionales.",
+      "level": "avanzado"
+    },
+    {
+      "id": 69,
+      "type": "multiple_choice",
+      "question": "¿Cuándo es obligatorio usar luces bajas durante el día?",
+      "options": ["Nunca", "En carreteras", "En túneles", "En lluvia"],
+      "correct_answer": 2,
+      "explanation": "Es obligatorio usar luces bajas en túneles durante el día.",
+      "level": "intermedio"
+    },
+    {
+      "id": 70,
+      "type": "true_false",
+      "question": "Se puede transportar animales sueltos en vehículos.",
+      "correct_answer": false,
+      "explanation": "Los animales deben transportarse en contenedores adecuados.",
+      "level": "basico"
+    },
+    {
+      "id": 71,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la multa por estacionar en lugar prohibido?",
+      "options": ["300 Bs", "500 Bs", "700 Bs", "1000 Bs"],
+      "correct_answer": 2,
+      "explanation": "La multa por estacionar en lugar prohibido es de 700 Bs.",
+      "level": "avanzado"
+    },
+    {
+      "id": 72,
+      "type": "true_false",
+      "question": "Los conductores de servicio público deben renovar licencia cada 3 años.",
+      "correct_answer": true,
+      "explanation": "Los conductores profesionales renuevan licencia cada 3 años.",
+      "level": "avanzado"
+    },
+    {
+      "id": 73,
+      "type": "multiple_choice",
+      "question": "¿Qué significa una señal triangular con borde rojo?",
+      "options": ["Prohibición", "Obligación", "Advertencia", "Información"],
+      "correct_answer": 2,
+      "explanation": "Las señales triangulares con borde rojo son de advertencia o peligro.",
+      "level": "avanzado"
+    },
+    {
+      "id": 74,
+      "type": "true_false",
+      "question": "Se puede circular con una llanta de repuesto temporal a cualquier velocidad.",
+      "correct_answer": false,
+      "explanation": "Las llantas de repuesto temporal tienen límite de velocidad (80 km/h).",
+      "level": "intermedio"
+    },
+    {
+      "id": 75,
+      "type": "multiple_choice",
+      "question": "¿Cuántos espejos retrovisores debe tener un vehículo?",
+      "options": ["Uno", "Dos", "Tres", "Cuatro"],
+      "correct_answer": 2,
+      "explanation": "Un vehículo debe tener tres espejos: uno interior y dos exteriores.",
+      "level": "intermedio"
+    },
+    {
+      "id": 76,
+      "type": "true_false",
+      "question": "Los vehículos pueden circular con vidrios polarizados al 100%.",
+      "correct_answer": false,
+      "explanation": "Los vidrios polarizados no pueden exceder el 70% de opacidad.",
+      "level": "intermedio"
+    },
+    {
+      "id": 77,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la sanción por conducir con licencia suspendida?",
+      "options": ["Multa", "Retención del vehículo", "Proceso penal", "Todas las anteriores"],
+      "correct_answer": 3,
+      "explanation": "Conducir con licencia suspendida conlleva multa, retención y proceso penal.",
+      "level": "avanzado"
+    },
+    {
+      "id": 78,
+      "type": "true_false",
+      "question": "Se puede usar sirena en vehículos particulares.",
+      "correct_answer": false,
+      "explanation": "Las sirenas están reservadas para vehículos de emergencia autorizados.",
+      "level": "intermedio"
+    },
+    {
+      "id": 79,
+      "type": "multiple_choice",
+      "question": "¿Qué distancia mínima debe haber entre vehículos en autopista?",
+      "options": ["50 metros", "100 metros", "150 metros", "Según velocidad"],
+      "correct_answer": 3,
+      "explanation": "La distancia debe ser proporcional a la velocidad (regla de los 3 segundos).",
+      "level": "avanzado"
+    },
+    {
+      "id": 80,
+      "type": "true_false",
+      "question": "Los vehículos de emergencia pueden circular en sentido contrario.",
+      "correct_answer": true,
+      "explanation": "Los vehículos de emergencia pueden circular en sentido contrario en emergencias.",
+      "level": "intermedio"
+    },
+    {
+      "id": 81,
+      "type": "multiple_choice",
+      "question": "¿Cuándo se debe usar el cinturón de seguridad?",
+      "options": ["Solo en carretera", "Solo en ciudad", "Solo de noche", "Siempre"],
+      "correct_answer": 3,
+      "explanation": "El cinturón de seguridad debe usarse siempre, en cualquier circunstancia.",
+      "level": "basico"
+    },
+    {
+      "id": 82,
+      "type": "true_false",
+      "question": "Se puede adelantar por la berma en caso de emergencia.",
+      "correct_answer": false,
+      "explanation": "La berma es solo para emergencias, no para adelantamientos.",
+      "level": "avanzado"
+    },
+    {
+      "id": 83,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la edad máxima para conducir transporte público?",
+      "options": ["60 años", "65 años", "70 años", "75 años"],
+      "correct_answer": 1,
+      "explanation": "La edad máxima para conducir transporte público es 65 años.",
+      "level": "intermedio"
+    },
+    {
+      "id": 84,
+      "type": "true_false",
+      "question": "Los vehículos eléctricos pueden usar carriles exclusivos.",
+      "correct_answer": false,
+      "explanation": "Los carriles exclusivos son solo para transporte público autorizado.",
+      "level": "basico"
+    },
+    {
+      "id": 85,
+      "type": "multiple_choice",
+      "question": "¿Qué significa una línea blanca discontinua?",
+      "options": ["Prohibido cruzar", "Permitido cruzar", "Carril de emergencia", "Zona de estacionamiento"],
+      "correct_answer": 1,
+      "explanation": "La línea blanca discontinua permite el cambio de carril.",
+      "level": "intermedio"
+    },
+    {
+      "id": 86,
+      "type": "true_false",
+      "question": "Se puede transportar combustible en recipientes en vehículos particulares.",
+      "correct_answer": false,
+      "explanation": "Está prohibido transportar combustible en recipientes no autorizados.",
+      "level": "intermedio"
+    },
+    {
+      "id": 87,
+      "type": "multiple_choice",
+      "question": "¿Cuántos puntos se pierden por no ceder el paso a peatones?",
+      "options": ["10 puntos", "20 puntos", "30 puntos", "40 puntos"],
+      "correct_answer": 2,
+      "explanation": "No ceder el paso a peatones resulta en pérdida de 30 puntos.",
+      "level": "avanzado"
+    },
+    {
+      "id": 88,
+      "type": "true_false",
+      "question": "Los vehículos pueden circular con escape libre.",
+      "correct_answer": false,
+      "explanation": "Los vehículos deben tener sistema de escape en buen estado.",
+      "level": "intermedio"
+    },
+    {
+      "id": 89,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la velocidad máxima en zonas residenciales?",
+      "options": ["20 km/h", "30 km/h", "40 km/h", "50 km/h"],
+      "correct_answer": 2,
+      "explanation": "En zonas residenciales la velocidad máxima es 40 km/h.",
+      "level": "intermedio"
+    },
+    {
+      "id": 90,
+      "type": "true_false",
+      "question": "Se puede conducir con chanclas o sandalias.",
+      "correct_answer": false,
+      "explanation": "Se debe conducir con calzado cerrado y seguro.",
+      "level": "basico"
+    },
+    {
+      "id": 91,
+      "type": "multiple_choice",
+      "question": "¿Qué categoría de licencia se necesita para transporte de pasajeros?",
+      "options": ["Categoría B", "Categoría C", "Categoría D", "Categoría E"],
+      "correct_answer": 2,
+      "explanation": "Para transporte de pasajeros se requiere licencia categoría D.",
+      "level": "basico"
+    },
+    {
+      "id": 92,
+      "type": "true_false",
+      "question": "Los vehículos pueden tener luces de neón decorativas.",
+      "correct_answer": false,
+      "explanation": "Las luces decorativas están prohibidas por causar distracción.",
+      "level": "avanzado"
+    },
+    {
+      "id": 93,
+      "type": "multiple_choice",
+      "question": "¿Cuándo es obligatorio encender luces de emergencia?",
+      "options": ["Al estacionar", "En averías", "En lluvia intensa", "Todas las anteriores"],
+      "correct_answer": 3,
+      "explanation": "Las luces de emergencia se usan al estacionar, en averías y condiciones adversas.",
+      "level": "intermedio"
+    },
+    {
+      "id": 94,
+      "type": "true_false",
+      "question": "Se puede circular con una sola luz delantera funcionando.",
+      "correct_answer": false,
+      "explanation": "Ambas luces delanteras deben funcionar correctamente.",
+      "level": "basico"
+    },
+    {
+      "id": 95,
+      "type": "multiple_choice",
+      "question": "¿Cuál es la multa por no tener SOAT vigente?",
+      "options": ["500 Bs", "1000 Bs", "1500 Bs", "2000 Bs"],
+      "correct_answer": 2,
+      "explanation": "La multa por no tener SOAT vigente es de 1500 Bs.",
+      "level": "basico"
+    },
+    {
+      "id": 96,
+      "type": "true_false",
+      "question": "Los vehículos de carga pueden circular en horario nocturno sin restricciones.",
+      "correct_answer": false,
+      "explanation": "Los vehículos de carga tienen restricciones horarias en algunas ciudades.",
+      "level": "intermedio"
+    },
+    {
+      "id": 97,
+      "type": "multiple_choice",
+      "question": "¿Qué significa una señal circular con fondo azul?",
+      "options": ["Prohibición", "Obligación", "Advertencia", "Información"],
+      "correct_answer": 1,
+      "explanation": "Las señales circulares con fondo azul indican obligación.",
+      "level": "basico"
+    },
+    {
+      "id": 98,
+      "type": "true_false",
+      "question": "Se puede usar el teléfono para GPS mientras se conduce.",
+      "correct_answer": true,
+      "explanation": "Se puede usar GPS, pero debe estar fijo y no manipularse mientras se conduce.",
+      "level": "intermedio"
+    },
+    {
+      "id": 99,
+      "type": "multiple_choice",
+      "question": "¿Cuántos puntos se pierden por adelantar en zona prohibida?",
+      "options": ["30 puntos", "40 puntos", "50 puntos", "60 puntos"],
+      "correct_answer": 2,
+      "explanation": "Adelantar en zona prohibida resulta en pérdida de 50 puntos.",
+      "level": "basico"
+    },
+    {
+      "id": 100,
+      "type": "true_false",
+      "question": "Los vehículos pueden circular con matrícula extranjera indefinidamente en Bolivia.",
+      "correct_answer": false,
+      "explanation": "Los vehículos con matrícula extranjera tienen tiempo límite para circular en Bolivia.",
+      "level": "intermedio"
+    }
+  ]
+}
