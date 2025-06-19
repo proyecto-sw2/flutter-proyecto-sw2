@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_splash/flutter_animated_splash.dart';
-import 'package:flutter_sw1/src/pages/home_page.dart';
+//import 'package:flutter_sw1/src/pages/home1_page.dart';
+import 'package:flutter_sw1/src/pages/login_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 
 class SplashPage extends StatelessWidget {
@@ -11,7 +12,7 @@ class SplashPage extends StatelessWidget {
     return AnimatedSplash(
       type: Transition.scale,
       backgroundColor: AppColors.primary,
-      navigator: const HomePage(),
+      navigator: const LoginPage(),
       durationInSeconds: 2,
       child: Positioned(
         top: 0,
