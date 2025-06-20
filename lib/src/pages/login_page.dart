@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/home1_page.dart';
 import 'package:flutter_sw1/src/pages/register_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:flutter_sw1/src/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
@@ -35,11 +37,11 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      print('Intentando conectar a: http://localhost:3000/api/auth/login');
+      print('Intentando conectar a: ${ApiConfig.loginUrl}');
       print('Email: ${_emailController.text}');
       
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/auth/login'),
+        Uri.parse(ApiConfig.loginUrl), // Usar la configuración
         headers: {
           'Content-Type': 'application/json',
         },
@@ -56,6 +58,14 @@ class _LoginPageState extends State<LoginPage> {
         // Login exitoso
         final responseData = json.decode(response.body);
         
+        // Guardar el token y email en SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', responseData['token']);
+        await prefs.setString('user_email', responseData['email']);
+        
+        print('Token guardado: ${responseData['token']}');
+        print('Email guardado: ${responseData['email']}');
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Login exitoso'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/login_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:flutter_sw1/src/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 //import 'package:go_router/go_router.dart';
@@ -36,12 +37,12 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      print('Intentando registrar usuario en: http://localhost:3000/api/auth/register');
+      print('Intentando registrar usuario en: ${ApiConfig.registerUrl}');
       print('Name: ${_usernameController.text}');
       print('Email: ${_emailController.text}');
       
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/auth/register'),
+        Uri.parse(ApiConfig.registerUrl), // Usar la configuración
         headers: {
           'Content-Type': 'application/json',
         },
