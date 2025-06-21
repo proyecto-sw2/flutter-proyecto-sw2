@@ -5,7 +5,7 @@ import 'package:flutter_sw1/src/pages/home1_page.dart';
 import 'package:flutter_sw1/src/pages/register_page.dart';
 import 'package:flutter_sw1/src/providers/user_provider.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
-import 'package:flutter_sw1/src/config.dart';
+import 'package:flutter_sw1/src/config/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';

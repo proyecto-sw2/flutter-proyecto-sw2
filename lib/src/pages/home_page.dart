@@ -106,7 +106,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingPublications && _hasMorePublications) {
         _loadMorePublications();
       }
@@ -115,13 +116,16 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadPublications() async {
     if (_isLoadingPublications) return;
-    
+
     setState(() {
       _isLoadingPublications = true;
     });
 
     try {
-      final response = await PublicationsService.getPublications(page: 1, limit: 10);
+      final response = await PublicationsService.getPublications(
+        page: 1,
+        limit: 10,
+      );
       setState(() {
         _publications = response['publicaciones'] ?? [];
         _currentPage = 1;
@@ -140,18 +144,18 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadMorePublications() async {
     if (_isLoadingPublications) return;
-    
+
     setState(() {
       _isLoadingPublications = true;
     });
 
     try {
       final response = await PublicationsService.getPublications(
-        page: _currentPage + 1, 
-        limit: 10
+        page: _currentPage + 1,
+        limit: 10,
       );
       final newPublications = response['publicaciones'] ?? [];
-      
+
       setState(() {
         _publications.addAll(newPublications);
         _currentPage++;
@@ -705,82 +709,72 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Lista de publicaciones
           Expanded(
-            child: _isLoadingPublications && _publications.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      _currentPage = 1;
-                      _hasMorePublications = true;
-                      _publications.clear();
-                      await _loadPublications();
-                    },
-                    child: _publications.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.article_outlined,
-                                  size: 64,
-                                  color: Colors.grey[400],
+            child:
+                _isLoadingPublications && _publications.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                      onRefresh: () async {
+                        _currentPage = 1;
+                        _hasMorePublications = true;
+                        _publications.clear();
+                        await _loadPublications();
+                      },
+                      child:
+                          _publications.isEmpty
+                              ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.article_outlined,
+                                      size: 64,
+                                      color: Colors.grey[400],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No hay publicaciones aún',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Sé el primero en compartir algo',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[500],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No hay publicaciones aún',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Sé el primero en compartir algo',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[500],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: _scrollController,
-                            itemCount: _publications.length + (_hasMorePublications ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == _publications.length) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
-                              return _buildPublicationCard(_publications[index]);
-                            },
-                          ),
-                  ),
-          Icon(Icons.groups, size: 80, color: AppColors.primary),
-          SizedBox(height: 20),
-          Text(
-            'Página de Comunidad',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Funciones de comunidad en desarrollo',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              )
+                              : ListView.builder(
+                                controller: _scrollController,
+                                itemCount:
+                                    _publications.length +
+                                    (_hasMorePublications ? 1 : 0),
+                                itemBuilder: (context, index) {
+                                  if (index == _publications.length) {
+                                    return const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  }
+                                  return _buildPublicationCard(
+                                    _publications[index],
+                                  );
+                                },
+                              ),
+                    ),
           ),
         ],
       ),
@@ -793,13 +787,11 @@ class _HomePageState extends State<HomePage> {
       imageUrl = imageUrl.trim().replaceAll('`', '').replaceAll(' ', '');
       if (imageUrl.isEmpty) imageUrl = null;
     }
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -834,29 +826,24 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Text(
                         _formatDate(publication['fecha_publicacion']),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Contenido de texto
-            if (publication['contenido_texto'] != null && publication['contenido_texto'].isNotEmpty)
+            if (publication['contenido_texto'] != null &&
+                publication['contenido_texto'].isNotEmpty)
               Text(
                 publication['contenido_texto'],
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.4,
-                ),
+                style: const TextStyle(fontSize: 15, height: 1.4),
               ),
-            
+
             // Imagen si existe
             if (imageUrl != null) ...[
               const SizedBox(height: 12),
@@ -880,10 +867,11 @@ class _HomePageState extends State<HomePage> {
                           ),
                           child: Center(
                             child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
+                              value:
+                                  loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
                               color: AppColors.primary,
                             ),
                           ),
@@ -922,9 +910,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 12),
-            
+
             // Botones de acción
             Row(
               children: [
@@ -943,7 +931,10 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -978,10 +969,11 @@ class _HomePageState extends State<HomePage> {
                       if (loadingProgress == null) return child;
                       return Center(
                         child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
+                          value:
+                              loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
                           color: Colors.white,
                         ),
                       );
@@ -1043,7 +1035,7 @@ class _HomePageState extends State<HomePage> {
       final date = DateTime.parse(dateString);
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 7) {
         return DateFormat('dd/MM/yyyy').format(date);
       } else if (difference.inDays > 0) {
@@ -1061,31 +1053,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showCommentsBottomSheet(Map<String, dynamic> publication) {
-    
     final publicationId = publication['id_publicacion'];
     int? id;
-    
+
     if (publicationId is int) {
       id = publicationId;
     } else if (publicationId is String) {
       id = int.tryParse(publicationId);
     }
-    
+
     if (id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error: ID de publicación inválido')),
       );
       return;
     }
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CommentsBottomSheet(
-        publicationId: id!,
-        publicationTitle: publication['contenido_texto'] ?? 'Publicación',
-      ),
+      builder:
+          (context) => CommentsBottomSheet(
+            publicationId: id!,
+            publicationTitle: publication['contenido_texto'] ?? 'Publicación',
+          ),
     );
   }
 
@@ -1176,6 +1168,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
-

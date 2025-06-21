@@ -33,7 +33,7 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Contenido scrolleable
             Expanded(
               child: SingleChildScrollView(
@@ -91,64 +91,17 @@ class ProfilePage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Lista de datos
                     _buildDataItem('Dato 1'),
                     const SizedBox(height: 16),
                     _buildDataItem('Dato 1'),
                     const SizedBox(height: 16),
                     _buildDataItem('Dato 1'),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Botón de regreso
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        GestureDetector(
-                          onTap: () => context.pop(),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.arrow_back,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 100), // Espacio para navegación
                   ],
                 ),
-              ),
-            ),
-            
-            // Bottom Navigation
-            Container(
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(Icons.home, 'Inicio', () => context.go('/home')),
-                  _buildNavItem(Icons.fullscreen, 'Escáner', () {}),
-                  _buildNavItem(Icons.error, 'Emergencia', () {}),
-                  _buildNavItem(Icons.map, 'Incidente', () {}),
-                  _buildNavItem(Icons.groups, 'Comunidad', () {}),
-                ],
               ),
             ),
           ],
@@ -156,7 +109,7 @@ class ProfilePage extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildDataItem(String text) {
     return Container(
       width: double.infinity,
@@ -175,45 +128,31 @@ class ProfilePage extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.search,
-            color: AppColors.primary,
-            size: 20,
-          ),
+          const Icon(Icons.search, color: AppColors.primary, size: 20),
           const SizedBox(width: 16),
           Text(
             text,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildNavItem(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
+          Icon(icon, color: Colors.white, size: 24),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 10),
           ),
         ],
       ),
     );
   }
-} 
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/login_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
-import 'package:flutter_sw1/src/config.dart';
+import 'package:flutter_sw1/src/config/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 //import 'package:go_router/go_router.dart';

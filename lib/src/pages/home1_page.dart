@@ -145,34 +145,7 @@ class _Home1PageState extends State<Home1Page> {
                 ),
               ),
             ),
-
-            // Quiz option
             Padding(padding: const EdgeInsets.all(24), child: _buildQuizCard()),
-
-            // Botón de regreso
-            Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () => context.go('/login'),
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -249,6 +222,7 @@ class _Home1PageState extends State<Home1Page> {
           ],
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
