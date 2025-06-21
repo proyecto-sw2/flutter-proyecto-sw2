@@ -32,6 +32,15 @@
 		<string>Permiso requerido para usar el audio del dispositivo</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Permiso requerido para usar el microfono del dispositivo</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Esta aplicación necesita acceso a la cámara para tomar fotos para las publicaciones.</string>
+
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Esta aplicación necesita acceso a la galería para seleccionar fotos para las
+			publicaciones.</string>
+
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Esta aplicación necesita acceso al micrófono para grabar videos.</string>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
