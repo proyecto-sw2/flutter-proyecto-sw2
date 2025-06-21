@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sw1/src/pages/chat_page.dart';
 import 'package:flutter_sw1/src/pages/home_page.dart';
 import 'package:flutter_sw1/src/pages/profile_page.dart';
 import 'package:flutter_sw1/src/pages/quiz_page.dart';
@@ -42,9 +43,9 @@ class _Home1PageState extends State<Home1Page> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Grid de opciones
             Expanded(
               child: Padding(
@@ -60,14 +61,25 @@ class _Home1PageState extends State<Home1Page> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ProfilePage()),
+                          MaterialPageRoute(
+                            builder: (context) => ProfilePage(),
+                          ),
                         );
                       },
                     ),
                     _buildOptionCard(
                       icon: Icons.search,
                       title: 'Consultas',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    const ChatPage(), // 2 es el índice de consultas
+                          ),
+                        );
+                      },
                     ),
                     _buildOptionCard(
                       icon: Icons.qr_code_scanner,
@@ -76,7 +88,10 @@ class _Home1PageState extends State<Home1Page> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(initialIndex: 0), // 0 es el índice del escáner
+                            builder:
+                                (context) => HomePage(
+                                  initialIndex: 0,
+                                ), // 0 es el índice del escáner
                           ),
                         );
                       },
@@ -88,7 +103,10 @@ class _Home1PageState extends State<Home1Page> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(initialIndex: 1), // 0 es el índice del escáner
+                            builder:
+                                (context) => HomePage(
+                                  initialIndex: 1,
+                                ), // 0 es el índice del escáner
                           ),
                         );
                       },
@@ -100,7 +118,10 @@ class _Home1PageState extends State<Home1Page> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(initialIndex: 3), // 0 es el índice del escáner
+                            builder:
+                                (context) => HomePage(
+                                  initialIndex: 3,
+                                ), // 0 es el índice del escáner
                           ),
                         );
                       },
@@ -112,7 +133,10 @@ class _Home1PageState extends State<Home1Page> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HomePage(initialIndex: 4), // 0 es el índice del escáner
+                            builder:
+                                (context) => HomePage(
+                                  initialIndex: 4,
+                                ), // 0 es el índice del escáner
                           ),
                         );
                       },
@@ -121,13 +145,10 @@ class _Home1PageState extends State<Home1Page> {
                 ),
               ),
             ),
-            
+
             // Quiz option
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: _buildQuizCard(),
-            ),
-            
+            Padding(padding: const EdgeInsets.all(24), child: _buildQuizCard()),
+
             // Botón de regreso
             Container(
               margin: const EdgeInsets.only(bottom: 20),
@@ -157,7 +178,7 @@ class _Home1PageState extends State<Home1Page> {
       ),
     );
   }
-  
+
   Widget _buildOptionCard({
     required IconData icon,
     required String title,
@@ -187,11 +208,7 @@ class _Home1PageState extends State<Home1Page> {
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 32,
-              ),
+              child: Icon(icon, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 12),
             Text(
@@ -207,7 +224,7 @@ class _Home1PageState extends State<Home1Page> {
       ),
     );
   }
-  
+
   Widget _buildQuizCard() {
     return GestureDetector(
       onTap: () {
@@ -239,11 +256,7 @@ class _Home1PageState extends State<Home1Page> {
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.quiz,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.quiz, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
             const Text(

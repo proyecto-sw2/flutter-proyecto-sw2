@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'quiz_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,11 +18,72 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late int _currentIndex;
+  File? _imageFile;
+  String? _descripcion;
+  bool _isLoading = false;
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source);
+    if (picked != null) {
+      setState(() {
+        _imageFile = File(picked.path);
+        _descripcion = null;
+      });
+      await _enviarImagen(File(picked.path));
+    }
+  }
+
+  Future<void> _enviarImagen(File imagen) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse(
+      'https://v9k5scrk-8000.brs.devtunnels.ms/analizar',
+    ); // Cambia si usas IP real
+
+    final request = http.MultipartRequest('POST', url);
+    request.files.add(await http.MultipartFile.fromPath('file', imagen.path));
+
+    try {
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+      final data = json.decode(respStr);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _descripcion = data['descripcion'];
+        });
+      } else {
+        setState(() {
+          _descripcion = 'Error: ${data['error']}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _descripcion = 'Error al enviar la imagen: $e';
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _limpiarEstado() {
+    setState(() {
+      _imageFile = null;
+      _descripcion = null;
+      _isLoading = false;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex ?? 2; // Usar el índice pasado o 2 por defecto
+    _currentIndex =
+        widget.initialIndex ?? 2; // Usar el índice pasado o 2 por defecto
   }
 
   @override
@@ -34,7 +100,7 @@ class _HomePageState extends State<HomePage> {
         ],
         backgroundColor: AppColors.primary,
         color: Colors.grey.shade200,
-        initialActiveIndex: _currentIndex, 
+        initialActiveIndex: _currentIndex,
         height: 60,
         onTap: (index) {
           setState(() {
@@ -147,17 +213,11 @@ class _HomePageState extends State<HomePage> {
               indicatorWeight: 2,
               labelColor: Colors.white,
               unselectedLabelColor: Colors.white70,
-              labelStyle: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: [
-                Tab(text: 'Señales'),
-                Tab(text: 'Multas'),
-              ],
+              labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              tabs: [Tab(text: 'Señales'), Tab(text: 'Multas')],
             ),
           ),
-          
+
           // Contenido del tab
           Expanded(
             child: TabBarView(
@@ -173,63 +233,123 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildScannerContent(String title) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          
-          // Título
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-          
-          const Spacer(),
-          
-          // Marco de escaneo
-          Container(
-            width: 200,
-            height: 200,
-            child: Stack(
-              children: [
-                // Esquinas del marco
-                ..._buildScannerCorners(),
-              ],
-            ),
-          ),
-          
-          const Spacer(),
-          
-          // Botón Escanear
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => _showScanResult(title.contains('Multas')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+
+              // Título
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
                 ),
               ),
-              child: const Text(
-                'Escanear',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+
+              const SizedBox(height: 20),
+
+              // Imagen o mensaje
+              if (_imageFile != null)
+                Image.file(_imageFile!)
+              else
+                Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.image, size: 60, color: Colors.grey),
+                      SizedBox(height: 10),
+                      Text(
+                        'No hay imagen seleccionada',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
                 ),
+
+              const SizedBox(height: 20),
+
+              // Loading
+              if (_isLoading) const CircularProgressIndicator(),
+
+              // Resultado
+              if (_descripcion != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    _descripcion!,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+
+              const SizedBox(height: 20),
+
+              // Botones
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  SizedBox(
+                    width: 150,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt, color: Colors.white),
+                      label: const Text(
+                        'Cámara',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 150,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(
+                        Icons.photo_library,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Galería',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+
+              const SizedBox(height: 30),
+            ],
           ),
-          
-          const SizedBox(height: 20),
-        ],
+        ),
       ),
     );
   }
@@ -237,29 +357,13 @@ class _HomePageState extends State<HomePage> {
   List<Widget> _buildScannerCorners() {
     return [
       // Esquina superior izquierda
-      Positioned(
-        top: 0,
-        left: 0,
-        child: _buildCorner(topLeft: true),
-      ),
+      Positioned(top: 0, left: 0, child: _buildCorner(topLeft: true)),
       // Esquina superior derecha
-      Positioned(
-        top: 0,
-        right: 0,
-        child: _buildCorner(topRight: true),
-      ),
+      Positioned(top: 0, right: 0, child: _buildCorner(topRight: true)),
       // Esquina inferior izquierda
-      Positioned(
-        bottom: 0,
-        left: 0,
-        child: _buildCorner(bottomLeft: true),
-      ),
+      Positioned(bottom: 0, left: 0, child: _buildCorner(bottomLeft: true)),
       // Esquina inferior derecha
-      Positioned(
-        bottom: 0,
-        right: 0,
-        child: _buildCorner(bottomRight: true),
-      ),
+      Positioned(bottom: 0, right: 0, child: _buildCorner(bottomRight: true)),
     ];
   }
 
@@ -274,10 +378,22 @@ class _HomePageState extends State<HomePage> {
       height: 40,
       decoration: BoxDecoration(
         border: Border(
-          top: (topLeft || topRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          left: (topLeft || bottomLeft) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          right: (topRight || bottomRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          bottom: (bottomLeft || bottomRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
+          top:
+              (topLeft || topRight)
+                  ? const BorderSide(color: Colors.black, width: 4)
+                  : BorderSide.none,
+          left:
+              (topLeft || bottomLeft)
+                  ? const BorderSide(color: Colors.black, width: 4)
+                  : BorderSide.none,
+          right:
+              (topRight || bottomRight)
+                  ? const BorderSide(color: Colors.black, width: 4)
+                  : BorderSide.none,
+          bottom:
+              (bottomLeft || bottomRight)
+                  ? const BorderSide(color: Colors.black, width: 4)
+                  : BorderSide.none,
         ),
       ),
     );
@@ -286,7 +402,7 @@ class _HomePageState extends State<HomePage> {
   void _showScanResult(bool isMulta) {
     // Simular resultado aleatorio
     bool isValid = DateTime.now().millisecondsSinceEpoch % 2 == 0;
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -317,9 +433,9 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Icono de resultado
                 Container(
                   width: 120,
@@ -334,9 +450,9 @@ class _HomePageState extends State<HomePage> {
                     size: 60,
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Botón de resultado
                 SizedBox(
                   width: double.infinity,
@@ -359,16 +475,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
-                
+
                 if (!isValid) ...[
                   const SizedBox(height: 16),
                   const Text(
                     'TEXTO EXPLICATIVO PORQUE ES INVÁLIDA',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ],
@@ -384,11 +497,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.warning,
-            size: 80,
-            color: Colors.red,
-          ),
+          Icon(Icons.warning, size: 80, color: Colors.red),
           SizedBox(height: 20),
           Text(
             'Página de Emergencia',
@@ -401,10 +510,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: 10),
           Text(
             'Sistema de emergencias en desarrollo',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -416,11 +522,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.map,
-            size: 80,
-            color: AppColors.primary,
-          ),
+          Icon(Icons.map, size: 80, color: AppColors.primary),
           SizedBox(height: 20),
           Text(
             'Página de Incidentes',
@@ -433,10 +535,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: 10),
           Text(
             'Mapa de incidentes en desarrollo',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -448,11 +547,7 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.groups,
-            size: 80,
-            color: AppColors.primary,
-          ),
+          Icon(Icons.groups, size: 80, color: AppColors.primary),
           SizedBox(height: 20),
           Text(
             'Página de Comunidad',
@@ -465,10 +560,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: 10),
           Text(
             'Funciones de comunidad en desarrollo',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -498,11 +590,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 30,
-              color: AppColors.primary,
-            ),
+            Icon(icon, size: 30, color: AppColors.primary),
             SizedBox(height: 10),
             Text(
               title,

@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_sw1/src/models/user.dart';
 import 'package:flutter_sw1/src/pages/home1_page.dart';
 import 'package:flutter_sw1/src/pages/register_page.dart';
+import 'package:flutter_sw1/src/providers/user_provider.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:flutter_sw1/src/config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:go_router/go_router.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberPassword = false;
@@ -39,12 +41,10 @@ class _LoginPageState extends State<LoginPage> {
     try {
       print('Intentando conectar a: ${ApiConfig.loginUrl}');
       print('Email: ${_emailController.text}');
-      
+
       final response = await http.post(
         Uri.parse(ApiConfig.loginUrl), // Usar la configuración
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
           'password': _passwordController.text,
@@ -57,12 +57,13 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Login exitoso
         final responseData = json.decode(response.body);
-        
+
         // Guardar el token y email en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', responseData['token']);
-        await prefs.setString('user_email', responseData['email']);
-        
+        // await prefs.setString('user_email', responseData['email']);
+        User user = User.fromJson(responseData['user']);
+        ref.read(userProvider.notifier).state = user;
         print('Token guardado: ${responseData['token']}');
         print('Email guardado: ${responseData['email']}');
 
@@ -83,7 +84,9 @@ class _LoginPageState extends State<LoginPage> {
         final errorData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error ${response.statusCode}: ${errorData['message'] ?? 'Error en el login'}'),
+            content: Text(
+              'Error ${response.statusCode}: ${errorData['message'] ?? 'Error en el login'}',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -113,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              
+
               // Header con VíaGo
               Container(
                 width: double.infinity,
@@ -132,9 +135,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Tabs Ingresar/Registrar
               Container(
                 decoration: BoxDecoration(
@@ -167,7 +170,9 @@ class _LoginPageState extends State<LoginPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => RegisterPage()),
+                            MaterialPageRoute(
+                              builder: (context) => RegisterPage(),
+                            ),
                           );
                         },
                         child: Container(
@@ -187,9 +192,9 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Bienvenido
               const Text(
                 'Bienvenido',
@@ -199,9 +204,9 @@ class _LoginPageState extends State<LoginPage> {
                   color: AppColors.primary,
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Campo Email
               Container(
                 decoration: BoxDecoration(
@@ -236,9 +241,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Campo Password
               Container(
                 decoration: BoxDecoration(
@@ -273,9 +278,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Recordar contraseña
               Row(
                 children: [
@@ -290,16 +295,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const Text(
                     'recordar contraseña',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 30),
-              
+
               // Botón Ingresar
               SizedBox(
                 width: double.infinity,
@@ -312,26 +314,27 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            'Ingresar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : const Text(
-                          'Ingresar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
-              
+
               const SizedBox(height: 60),
             ],
           ),
