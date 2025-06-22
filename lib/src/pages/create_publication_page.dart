@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 import '../config/config.dart';
 import '../theme/app_colors.dart';
@@ -21,7 +22,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
   final _formKey = GlobalKey<FormState>();
   final _contenidoController = TextEditingController();
   final _incidenteController = TextEditingController();
-  
+
   File? _selectedFile;
   bool _isLoading = false;
   late AnimationController _animationController;
@@ -35,23 +36,18 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
-    
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+
     _animationController.forward();
   }
 
@@ -65,7 +61,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -167,20 +163,13 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.1),
+          color: AppColors.primary.withAlpha(25),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: AppColors.primary.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.primary.withAlpha(75), width: 1),
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: AppColors.primary,
-            ),
+            Icon(icon, size: 32, color: AppColors.primary),
             const SizedBox(height: 8),
             Text(
               label,
@@ -213,11 +202,11 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
       // 1. Moderar texto si existe
       if (_contenidoController.text.isNotEmpty) {
         _showSnackBar('Analizando contenido de texto...', isError: false);
-        
+
         final textResult = await ContentModerationService.analyzeText(
-          _contenidoController.text
+          _contenidoController.text,
         );
-        
+
         if (!textResult.isAppropriate) {
           _showSnackBar(
             'El texto contiene ${textResult.reason}. Por favor, modifica el contenido.',
@@ -229,15 +218,15 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           return;
         }
       }
-      
+
       // 2. Moderar imagen si existe
       if (_selectedFile != null) {
         _showSnackBar('Verificando archivo...', isError: false);
-        
+
         final imageResult = await ContentModerationService.analyzeImage(
-          _selectedFile!
+          _selectedFile!,
         );
-        
+
         if (!imageResult.isAppropriate) {
           _showSnackBar(
             'Error con el archivo: ${imageResult.reason}. Por favor, selecciona otro archivo.',
@@ -249,13 +238,13 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           return;
         }
       }
-      
+
       // 3. Si pasa la moderación, continuar con el envío
       _showSnackBar('Contenido verificado. Publicando...', isError: false);
-      
+
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      
+
       if (token == null) {
         _showSnackBar('No se encontró token de autenticación', isError: true);
         return;
@@ -274,7 +263,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
       if (_contenidoController.text.isNotEmpty) {
         request.fields['contenido_texto'] = _contenidoController.text;
       }
-      
+
       if (_incidenteController.text.isNotEmpty) {
         request.fields['id_incidente'] = _incidenteController.text;
       }
@@ -283,7 +272,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
       if (_selectedFile != null) {
         String? mimeType;
         String extension = _selectedFile!.path.toLowerCase().split('.').last;
-        
+
         switch (extension) {
           case 'jpg':
           case 'jpeg':
@@ -301,7 +290,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           default:
             mimeType = 'image/jpeg';
         }
-        
+
         request.files.add(
           http.MultipartFile(
             'file',
@@ -318,15 +307,14 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         _showSnackBar('Publicación creada exitosamente', isError: false);
-        
+
         // Limpiar formulario
         _contenidoController.clear();
         _incidenteController.clear();
         setState(() {
           _selectedFile = null;
         });
-        
-        // Regresar a la página anterior
+
         Navigator.pop(context, true);
       } else {
         final errorData = json.decode(responseBody);
@@ -336,10 +324,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
         );
       }
     } catch (e) {
-      _showSnackBar(
-        'Error: ${e.toString()}',
-        isError: true,
-      );
+      _showSnackBar('Error: ${e.toString()}', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
@@ -353,9 +338,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -370,14 +353,19 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            fontSize: 26,
           ),
         ),
+        centerTitle: true,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.pop(context),
+        ),
+        toolbarHeight: 70,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
         ),
       ),
       body: FadeTransition(
@@ -398,15 +386,15 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.primary.withOpacity(0.1),
-                          AppColors.primary.withOpacity(0.05),
+                          AppColors.primary.withAlpha(25),
+                          AppColors.primary.withAlpha(12),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withAlpha(50),
                         width: 1,
                       ),
                     ),
@@ -451,9 +439,9 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Campo de contenido
                   _buildInputSection(
                     title: 'Contenido de la publicación',
@@ -469,23 +457,27 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.primary, width: 2),
+                          borderSide: BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.all(16),
                       ),
                       validator: (value) {
-                        if ((value == null || value.isEmpty) && _selectedFile == null) {
+                        if ((value == null || value.isEmpty) &&
+                            _selectedFile == null) {
                           return 'Debe proporcionar contenido o seleccionar un archivo';
                         }
                         return null;
                       },
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Campo de incidente (opcional)
                   _buildInputSection(
                     title: 'ID de Incidente (opcional)',
@@ -501,7 +493,10 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppColors.primary, width: 2),
+                          borderSide: BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -513,9 +508,9 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Sección de archivo
                   _buildInputSection(
                     title: 'Archivo multimedia (opcional)',
@@ -526,26 +521,29 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _selectedFile != null 
-                              ? AppColors.primary 
-                              : Colors.grey[300]!,
+                          color:
+                              _selectedFile != null
+                                  ? AppColors.primary
+                                  : Colors.grey[300]!,
                           width: _selectedFile != null ? 2 : 1,
                         ),
                       ),
-                      child: _selectedFile != null
-                          ? _buildSelectedFilePreview()
-                          : _buildFileSelector(),
+                      child:
+                          _selectedFile != null
+                              ? _buildSelectedFilePreview()
+                              : _buildFileSelector(),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Botones de acción
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _isLoading ? null : () => Navigator.pop(context),
+                          onPressed:
+                              _isLoading ? null : () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             side: BorderSide(color: AppColors.primary),
@@ -576,28 +574,31 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                             ),
                             elevation: 2,
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Publicar',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                )
-                              : const Text(
-                                  'Publicar',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 20),
                 ],
               ),
@@ -634,7 +635,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 25),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -655,10 +656,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
           const SizedBox(height: 4),
           Text(
             'Toca para seleccionar una imagen o video',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -674,14 +672,10 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withAlpha(25),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                Icons.image,
-                color: AppColors.primary,
-                size: 24,
-              ),
+              child: Icon(Icons.image, color: AppColors.primary, size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -698,10 +692,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                   ),
                   Text(
                     _selectedFile!.path.split('/').last,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -713,10 +704,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
                   _selectedFile = null;
                 });
               },
-              icon: Icon(
-                Icons.close,
-                color: Colors.red[400],
-              ),
+              icon: Icon(Icons.close, color: Colors.red[400]),
             ),
           ],
         ),

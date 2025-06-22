@@ -29,13 +29,17 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   late AnimationController _cardAnimationController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   static const int questionsPerQuiz = 5;
-  static const List<String> difficultyLevels = ['basico', 'intermedio', 'avanzado'];
+  static const List<String> difficultyLevels = [
+    'basico',
+    'intermedio',
+    'avanzado',
+  ];
   static const Map<String, String> levelNames = {
     'basico': 'Básico',
     'intermedio': 'Intermedio',
-    'avanzado': 'Avanzado'
+    'avanzado': 'Avanzado',
   };
 
   @override
@@ -48,17 +52,18 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     _slideAnimation = Tween<Offset>(
       begin: Offset(1.0, 0.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _cardAnimationController,
-      curve: Curves.easeInOut,
-    ));
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _cardAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(
+      CurvedAnimation(
+        parent: _cardAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _cardAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
     loadQuestions();
   }
 
@@ -70,17 +75,19 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   Future<void> loadQuestions() async {
     try {
-      final String response = await rootBundle.loadString('assets/quiz_questions.json');
+      final String response = await rootBundle.loadString(
+        'assets/quiz_questions.json',
+      );
       final data = await json.decode(response);
       allQuestions = List<Map<String, dynamic>>.from(data['questions']);
-      
+
       await loadLastScore();
       await loadSavedProgress();
-      
+
       setState(() {
         isLoading = false;
       });
-      
+
       _cardAnimationController.forward();
     } catch (e) {
       print('Error loading questions: $e');
@@ -106,10 +113,15 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     final savedIndex = prefs.getInt('current_question_index') ?? 0;
     final savedScore = prefs.getInt('current_quiz_score') ?? 0;
     final savedLevel = prefs.getString('current_quiz_level');
-    
-    if (savedQuestions != null && savedQuestions.isNotEmpty && savedLevel != null) {
+
+    if (savedQuestions != null &&
+        savedQuestions.isNotEmpty &&
+        savedLevel != null) {
       // Restaurar progreso guardado
-      currentQuizQuestions = savedQuestions.map((q) => json.decode(q) as Map<String, dynamic>).toList();
+      currentQuizQuestions =
+          savedQuestions
+              .map((q) => json.decode(q) as Map<String, dynamic>)
+              .toList();
       currentQuestionIndex = savedIndex;
       score = savedScore;
       selectedLevel = savedLevel;
@@ -124,10 +136,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   void startNewQuiz(String level) {
     final random = Random();
-    
+
     // Filtrar preguntas por nivel
-    final questionsForLevel = allQuestions.where((q) => q['level'] == level).toList();
-    
+    final questionsForLevel =
+        allQuestions.where((q) => q['level'] == level).toList();
+
     if (questionsForLevel.length < questionsPerQuiz) {
       // Si no hay suficientes preguntas del nivel seleccionado, mostrar error
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,9 +151,9 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       );
       return;
     }
-    
+
     questionsForLevel.shuffle(random);
-    
+
     currentQuizQuestions = questionsForLevel.take(questionsPerQuiz).toList();
     selectedLevel = level;
     currentQuestionIndex = 0;
@@ -150,14 +163,15 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     showExplanation = false;
     selectedAnswer = null;
     userAnswers = List.filled(currentQuizQuestions.length, -1);
-    
+
     saveProgress();
   }
 
   Future<void> saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
-    final questionsJson = currentQuizQuestions.map((q) => json.encode(q)).toList();
-    
+    final questionsJson =
+        currentQuizQuestions.map((q) => json.encode(q)).toList();
+
     await prefs.setStringList('current_quiz_questions', questionsJson);
     await prefs.setInt('current_question_index', currentQuestionIndex);
     await prefs.setInt('current_quiz_score', score);
@@ -189,10 +203,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     // Verificar si la respuesta es correcta
     final currentQuestion = currentQuizQuestions[currentQuestionIndex];
     bool isCorrect = false;
-    
+
     if (currentQuestion['type'] == 'true_false') {
-      isCorrect = (selectedAnswer == 0 && currentQuestion['correct_answer'] == true) ||
-                 (selectedAnswer == 1 && currentQuestion['correct_answer'] == false);
+      isCorrect =
+          (selectedAnswer == 0 && currentQuestion['correct_answer'] == true) ||
+          (selectedAnswer == 1 && currentQuestion['correct_answer'] == false);
     } else {
       isCorrect = selectedAnswer == currentQuestion['correct_answer'];
     }
@@ -242,11 +257,14 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         appBar: AppBar(
           title: Text('Quiz de Tránsito'),
           backgroundColor: AppColors.primary,
+          centerTitle: true,
+          toolbarHeight: 70,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+          ),
         ),
         body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
-          ),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -260,6 +278,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         appBar: AppBar(
           title: Text('Quiz de Tránsito'),
           backgroundColor: AppColors.primary,
+          centerTitle: true,
+          toolbarHeight: 70,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+          ),
         ),
         body: Center(
           child: Text(
@@ -279,6 +302,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         title: Text('Quiz de Tránsito'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        centerTitle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+        ),
+        toolbarHeight: 70,
       ),
       body: SlideTransition(
         position: _slideAnimation,
@@ -292,7 +320,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
 
   Widget _buildQuestionScreen() {
     final question = currentQuizQuestions[currentQuestionIndex];
-    
+
     return Padding(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -307,13 +335,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
           SizedBox(height: 10),
           Text(
             'Pregunta ${currentQuestionIndex + 1} de ${currentQuizQuestions.length}',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           SizedBox(height: 20),
-          
+
           // Pregunta
           Card(
             elevation: 4,
@@ -323,13 +348,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 children: [
                   Text(
                     question['question'],
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     textAlign: TextAlign.center,
                   ),
-                  
+
                   // Mostrar imagen si es pregunta de identificación
                   if (question['type'] == 'image_identification') ...[
                     SizedBox(height: 20),
@@ -350,14 +372,12 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          
+
           SizedBox(height: 20),
-          
+
           // Opciones de respuesta
-          Expanded(
-            child: _buildAnswerOptions(question),
-          ),
-          
+          Expanded(child: _buildAnswerOptions(question)),
+
           // Explicación (si se muestra)
           if (showExplanation) ...[
             Card(
@@ -367,18 +387,25 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 child: Column(
                   children: [
                     Icon(
-                      selectedAnswer == question['correct_answer'] || 
-                      (question['type'] == 'true_false' && 
-                       ((selectedAnswer == 0 && question['correct_answer'] == true) ||
-                        (selectedAnswer == 1 && question['correct_answer'] == false)))
-                        ? Icons.check_circle
-                        : Icons.cancel,
-                      color: selectedAnswer == question['correct_answer'] || 
-                             (question['type'] == 'true_false' && 
-                              ((selectedAnswer == 0 && question['correct_answer'] == true) ||
-                               (selectedAnswer == 1 && question['correct_answer'] == false)))
-                        ? Colors.green
-                        : Colors.red,
+                      selectedAnswer == question['correct_answer'] ||
+                              (question['type'] == 'true_false' &&
+                                  ((selectedAnswer == 0 &&
+                                          question['correct_answer'] == true) ||
+                                      (selectedAnswer == 1 &&
+                                          question['correct_answer'] == false)))
+                          ? Icons.check_circle
+                          : Icons.cancel,
+                      color:
+                          selectedAnswer == question['correct_answer'] ||
+                                  (question['type'] == 'true_false' &&
+                                      ((selectedAnswer == 0 &&
+                                              question['correct_answer'] ==
+                                                  true) ||
+                                          (selectedAnswer == 1 &&
+                                              question['correct_answer'] ==
+                                                  false)))
+                              ? Colors.green
+                              : Colors.red,
                       size: 30,
                     ),
                     SizedBox(height: 10),
@@ -393,7 +420,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
             ),
             SizedBox(height: 20),
           ],
-          
+
           // Botones
           if (!showExplanation)
             ElevatedButton(
@@ -417,7 +444,9 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                 padding: EdgeInsets.symmetric(vertical: 15),
               ),
               child: Text(
-                currentQuestionIndex < currentQuizQuestions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados',
+                currentQuestionIndex < currentQuizQuestions.length - 1
+                    ? 'Siguiente Pregunta'
+                    : 'Ver Resultados',
                 style: TextStyle(fontSize: 16),
               ),
             ),
@@ -441,30 +470,39 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         itemBuilder: (context, index) {
           return Padding(
             padding: EdgeInsets.only(bottom: 10),
-            child: _buildAnswerCard(index, question['options'][index], question),
+            child: _buildAnswerCard(
+              index,
+              question['options'][index],
+              question,
+            ),
           );
         },
       );
     }
   }
 
-  Widget _buildAnswerCard(int index, String text, Map<String, dynamic> question) {
+  Widget _buildAnswerCard(
+    int index,
+    String text,
+    Map<String, dynamic> question,
+  ) {
     bool isSelected = selectedAnswer == index;
     bool isCorrect = false;
     bool showCorrectAnswer = showExplanation;
-    
+
     if (showCorrectAnswer) {
       if (question['type'] == 'true_false') {
-        isCorrect = (index == 0 && question['correct_answer'] == true) ||
-                   (index == 1 && question['correct_answer'] == false);
+        isCorrect =
+            (index == 0 && question['correct_answer'] == true) ||
+            (index == 1 && question['correct_answer'] == false);
       } else {
         isCorrect = index == question['correct_answer'];
       }
     }
-    
+
     Color cardColor = Colors.white;
     Color borderColor = Colors.grey[300]!;
-    
+
     if (showCorrectAnswer) {
       if (isCorrect) {
         cardColor = Colors.green[50]!;
@@ -477,7 +515,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       cardColor = AppColors.primary.withOpacity(0.1);
       borderColor = AppColors.primary;
     }
-    
+
     return GestureDetector(
       onTap: showExplanation ? null : () => selectAnswer(index),
       child: Card(
@@ -499,9 +537,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   border: Border.all(color: borderColor, width: 2),
                   color: isSelected ? borderColor : Colors.transparent,
                 ),
-                child: isSelected
-                    ? Icon(Icons.check, color: Colors.white, size: 16)
-                    : null,
+                child:
+                    isSelected
+                        ? Icon(Icons.check, color: Colors.white, size: 16)
+                        : null,
               ),
               SizedBox(width: 15),
               Expanded(
@@ -509,7 +548,8 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   text,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
@@ -530,6 +570,11 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         title: Text('Seleccionar Nivel'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        centerTitle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+        ),
+        toolbarHeight: 70,
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
@@ -543,11 +588,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   padding: EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.history,
-                        size: 40,
-                        color: AppColors.primary,
-                      ),
+                      Icon(Icons.history, size: 40, color: AppColors.primary),
                       SizedBox(height: 10),
                       Text(
                         'Último Resultado',
@@ -560,10 +601,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       SizedBox(height: 5),
                       Text(
                         '$lastScore/$questionsPerQuiz preguntas correctas',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -583,10 +621,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
             SizedBox(height: 10),
             Text(
               'Elige el nivel que mejor se adapte a tu conocimiento',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 40),
@@ -601,7 +636,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     IconData levelIcon;
     Color levelColor;
     String description;
-    
+
     switch (level) {
       case 'basico':
         levelIcon = Icons.school;
@@ -623,7 +658,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
         levelColor = Colors.grey;
         description = 'Nivel desconocido';
     }
-    
+
     return Padding(
       padding: EdgeInsets.only(bottom: 15),
       child: Card(
@@ -646,11 +681,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                     color: levelColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Icon(
-                    levelIcon,
-                    color: levelColor,
-                    size: 30,
-                  ),
+                  child: Icon(levelIcon, color: levelColor, size: 30),
                 ),
                 SizedBox(width: 20),
                 Expanded(
@@ -668,18 +699,12 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                       SizedBox(height: 5),
                       Text(
                         description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey[400],
-                ),
+                Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),
               ],
             ),
           ),
@@ -691,18 +716,15 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
   Widget _buildTrafficSignImage(String imagePath) {
     // Convertir la ruta de PNG a SVG
     String svgPath = imagePath.replaceAll('.png', '.svg');
-    
+
     return SvgPicture.asset(
       svgPath,
       fit: BoxFit.contain,
-      placeholderBuilder: (BuildContext context) => Container(
-        color: Colors.grey[200],
-        child: Icon(
-          Icons.image,
-          color: Colors.grey[400],
-          size: 40,
-        ),
-      ),
+      placeholderBuilder:
+          (BuildContext context) => Container(
+            color: Colors.grey[200],
+            child: Icon(Icons.image, color: Colors.grey[400], size: 40),
+          ),
     );
   }
 
@@ -711,9 +733,10 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
     String resultMessage;
     Color resultColor;
     IconData resultIcon;
-    
+
     if (percentage >= 80) {
-      resultMessage = '¡Excelente! Tienes un buen conocimiento del código de tránsito.';
+      resultMessage =
+          '¡Excelente! Tienes un buen conocimiento del código de tránsito.';
       resultColor = Colors.green;
       resultIcon = Icons.emoji_events;
     } else if (percentage >= 60) {
@@ -725,23 +748,24 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
       resultColor = Colors.red;
       resultIcon = Icons.school;
     }
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Resultados del Quiz'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        centerTitle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+        ),
+        toolbarHeight: 70,
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              resultIcon,
-              size: 80,
-              color: resultColor,
-            ),
+            Icon(resultIcon, size: 80, color: resultColor),
             SizedBox(height: 20),
             Text(
               'Quiz Completado',
@@ -760,28 +784,25 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
                   children: [
                     Text(
                       'Tu Puntuación',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 10),
                     Text(
-                  '$score/$questionsPerQuiz',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: resultColor,
-                  ),
-                ),
-                Text(
-                  '${percentage.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: resultColor,
-                  ),
-                ),
+                      '$score/$questionsPerQuiz',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: resultColor,
+                      ),
+                    ),
+                    Text(
+                      '${percentage.toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: resultColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -789,10 +810,7 @@ class _QuizPageState extends State<QuizPage> with TickerProviderStateMixin {
             SizedBox(height: 20),
             Text(
               resultMessage,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 40),

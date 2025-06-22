@@ -155,16 +155,16 @@ class ContentModerationService {
     }
   }
   
-  static int _getLikelihoodLevel(String likelihood) {
-    switch (likelihood) {
-      case 'VERY_UNLIKELY': return 1;
-      case 'UNLIKELY': return 2;
-      case 'POSSIBLE': return 3;
-      case 'LIKELY': return 4;
-      case 'VERY_LIKELY': return 5;
-      default: return 1;
-    }
-  }
+  // static int _getLikelihoodLevel(String likelihood) {
+  //   switch (likelihood) {
+  //     case 'VERY_UNLIKELY': return 1;
+  //     case 'UNLIKELY': return 2;
+  //     case 'POSSIBLE': return 3;
+  //     case 'LIKELY': return 4;
+  //     case 'VERY_LIKELY': return 5;
+  //     default: return 1;
+  //   }
+  // }
 }
 
 class SafeSearchResult {

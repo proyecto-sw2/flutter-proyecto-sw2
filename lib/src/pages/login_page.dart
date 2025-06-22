@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sw1/src/models/user.dart';
-import 'package:flutter_sw1/src/pages/home1_page.dart';
+import 'package:flutter_sw1/src/pages/home_page.dart';
 import 'package:flutter_sw1/src/pages/register_page.dart';
 import 'package:flutter_sw1/src/providers/user_provider.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
@@ -27,7 +27,10 @@ class LoginPageState extends ConsumerState<LoginPage> {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, completa todos los campos'),
+          content: Text(
+            'Por favor, completa todos los campos',
+            textAlign: TextAlign.center,
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -69,7 +72,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Login exitoso'),
+            content: Text('Login exitoso', textAlign: TextAlign.center),
             backgroundColor: Colors.green,
           ),
         );
@@ -77,7 +80,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
         // Navegar a la página principal
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Home1Page()),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else {
         // Error en el login
@@ -86,6 +89,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
           SnackBar(
             content: Text(
               'Error ${response.statusCode}: ${errorData['message'] ?? 'Error en el login'}',
+              textAlign: TextAlign.center,
             ),
             backgroundColor: Colors.red,
           ),
@@ -95,7 +99,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
       print('Error de conexión: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error de conexión: $e'),
+          content: Text('Error de conexión: $e', textAlign: TextAlign.center),
           backgroundColor: Colors.red,
         ),
       );
@@ -136,7 +140,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
               // Tabs Ingresar/Registrar
               Container(
@@ -214,7 +218,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -251,7 +255,7 @@ class LoginPageState extends ConsumerState<LoginPage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -282,24 +286,23 @@ class LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 16),
 
               // Recordar contraseña
-              Row(
-                children: [
-                  Checkbox(
-                    value: _rememberPassword,
-                    onChanged: (value) {
-                      setState(() {
-                        _rememberPassword = value ?? false;
-                      });
-                    },
-                    activeColor: AppColors.primary,
-                  ),
-                  const Text(
-                    'recordar contraseña',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                ],
-              ),
-
+              // Row(
+              //   children: [
+              //     Checkbox(
+              //       value: _rememberPassword,
+              //       onChanged: (value) {
+              //         setState(() {
+              //           _rememberPassword = value ?? false;
+              //         });
+              //       },
+              //       activeColor: AppColors.primary,
+              //     ),
+              //     const Text(
+              //       'recordar contraseña',
+              //       style: TextStyle(color: Colors.grey, fontSize: 14),
+              //     ),
+              //   ],
+              // ),
               const SizedBox(height: 30),
 
               // Botón Ingresar

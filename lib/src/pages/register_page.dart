@@ -20,12 +20,15 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
 
   Future<void> _register() async {
-    if (_usernameController.text.isEmpty || 
-        _emailController.text.isEmpty || 
+    if (_usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, completa todos los campos'),
+          content: Text(
+            'Por favor, completa todos los campos',
+            textAlign: TextAlign.center,
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -40,12 +43,10 @@ class _RegisterPageState extends State<RegisterPage> {
       print('Intentando registrar usuario en: ${ApiConfig.registerUrl}');
       print('Name: ${_usernameController.text}');
       print('Email: ${_emailController.text}');
-      
+
       final response = await http.post(
         Uri.parse(ApiConfig.registerUrl), // Usar la configuración
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'name': _usernameController.text,
           'email': _emailController.text,
@@ -57,12 +58,12 @@ class _RegisterPageState extends State<RegisterPage> {
       print('Response Body: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        // Registro exitoso
-        final responseData = json.decode(response.body);
-        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Registro exitoso. Ahora puedes iniciar sesión'),
+            content: Text(
+              'Registro exitoso. Ahora puedes iniciar sesión',
+              textAlign: TextAlign.center,
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -77,7 +78,10 @@ class _RegisterPageState extends State<RegisterPage> {
         final errorData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error ${response.statusCode}: ${errorData['message'] ?? 'Error en el registro'}'),
+            content: Text(
+              'Error ${response.statusCode}: ${errorData['message'] ?? 'Error en el registro'}',
+              textAlign: TextAlign.center,
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -86,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
       print('Error de conexión: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error de conexión: $e'),
+          content: Text('Error de conexión: $e', textAlign: TextAlign.center),
           backgroundColor: Colors.red,
         ),
       );
@@ -107,7 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              
+
               // Header con VíaGo
               Container(
                 width: double.infinity,
@@ -126,9 +130,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Tabs Ingresar/Registrar
               Container(
                 decoration: BoxDecoration(
@@ -142,7 +146,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => LoginPage()),
+                            MaterialPageRoute(
+                              builder: (context) => LoginPage(),
+                            ),
                           );
                         },
                         child: Container(
@@ -181,9 +187,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Crear Cuenta
               const Text(
                 'Crear Cuenta',
@@ -193,9 +199,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   color: AppColors.primary,
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Campo Username
               Container(
                 decoration: BoxDecoration(
@@ -203,7 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -229,9 +235,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Campo Email
               Container(
                 decoration: BoxDecoration(
@@ -239,7 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -266,9 +272,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Campo Password
               Container(
                 decoration: BoxDecoration(
@@ -276,7 +282,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 10,
                       offset: const Offset(0, 1),
@@ -303,9 +309,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Botón Registrarse
               SizedBox(
                 width: double.infinity,
@@ -318,26 +324,27 @@ class _RegisterPageState extends State<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            'Registrarse',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : const Text(
-                          'Registrarse',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
-              
+
               const SizedBox(height: 60),
             ],
           ),

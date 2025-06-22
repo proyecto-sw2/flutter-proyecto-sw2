@@ -9,10 +9,10 @@ class CommentsBottomSheet extends StatefulWidget {
   final String publicationTitle;
 
   const CommentsBottomSheet({
-    Key? key,
+    super.key,
     required this.publicationId,
     required this.publicationTitle,
-  }) : super(key: key);
+  });
 
   @override
   State<CommentsBottomSheet> createState() => _CommentsBottomSheetState();
@@ -64,28 +64,28 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
   }
 
   // Método para filtrar comentarios duplicados
-  List<Map<String, dynamic>> _filterDuplicateComments(List<Map<String, dynamic>> comments) {
-    // Recopilar todos los IDs de comentarios que aparecen como respuestas
-    Set<int> replyIds = <int>{};
+  // List<Map<String, dynamic>> _filterDuplicateComments(List<Map<String, dynamic>> comments) {
+  //   // Recopilar todos los IDs de comentarios que aparecen como respuestas
+  //   Set<int> replyIds = <int>{};
     
-    void collectReplyIds(List<dynamic>? replies) {
-      if (replies != null) {
-        for (var reply in replies) {
-          replyIds.add(reply['id_comentario']);
-          // Recursivamente recopilar IDs de respuestas anidadas
-          collectReplyIds(reply['respuestas']);
-        }
-      }
-    }
+  //   void collectReplyIds(List<dynamic>? replies) {
+  //     if (replies != null) {
+  //       for (var reply in replies) {
+  //         replyIds.add(reply['id_comentario']);
+  //         // Recursivamente recopilar IDs de respuestas anidadas
+  //         collectReplyIds(reply['respuestas']);
+  //       }
+  //     }
+  //   }
     
-    // Recopilar todos los IDs de respuestas
-    for (var comment in comments) {
-      collectReplyIds(comment['respuestas']);
-    }
+  //   // Recopilar todos los IDs de respuestas
+  //   for (var comment in comments) {
+  //     collectReplyIds(comment['respuestas']);
+  //   }
     
-    // Filtrar comentarios principales que no sean respuestas
-    return comments.where((comment) => !replyIds.contains(comment['id_comentario'])).toList();
-  }
+  //   // Filtrar comentarios principales que no sean respuestas
+  //   return comments.where((comment) => !replyIds.contains(comment['id_comentario'])).toList();
+  // }
 
   Future<void> _submitComment() async {
     final commentText = _commentController.text.trim();
@@ -535,7 +535,7 @@ Color _getBorderColor(int depth) {
                   border: Border(top: BorderSide(color: Colors.grey[200]!)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withAlpha(25),
                       spreadRadius: 1,
                       blurRadius: 4,
                       offset: const Offset(0, -2),
@@ -584,7 +584,7 @@ Color _getBorderColor(int depth) {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withAlpha(75),
                             spreadRadius: 1,
                             blurRadius: 4,
                             offset: const Offset(0, 2),

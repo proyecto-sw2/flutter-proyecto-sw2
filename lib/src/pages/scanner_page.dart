@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
-import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -9,349 +13,197 @@ class ScannerPage extends StatefulWidget {
   State<ScannerPage> createState() => _ScannerPageState();
 }
 
-class _ScannerPageState extends State<ScannerPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ScannerPageState extends State<ScannerPage> {
+  File? _imageFile;
+  String? _descripcion;
+  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source);
+    if (picked != null) {
+      setState(() {
+        _imageFile = File(picked.path);
+        _descripcion = null;
+      });
+      await _enviarImagen(File(picked.path));
+    }
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _enviarImagen(File imagen) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse(
+      'https://v9k5scrk-8000.brs.devtunnels.ms/analizar',
+    ); // Cambia si usas IP real
+
+    final request = http.MultipartRequest('POST', url);
+    request.files.add(await http.MultipartFile.fromPath('file', imagen.path));
+
+    try {
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+      final data = json.decode(respStr);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _descripcion = data['descripcion'];
+        });
+      } else {
+        setState(() {
+          _descripcion = 'Error: ${data['error']}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _descripcion = 'Error al enviar la imagen: $e';
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header con tabs
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-              ),
-              child: Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20, bottom: 10),
-                    child: Text(
-                      'Escaner',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  TabBar(
-                    controller: _tabController,
-                    indicatorColor: Colors.white,
-                    indicatorWeight: 2,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white70,
-                    labelStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    tabs: const [
-                      Tab(text: 'Señales'),
-                      Tab(text: 'Multas'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Contenido del tab
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildScannerContent('Escaneo de Señales'),
-                  _buildScannerContent('Escaneo de Multas'),
-                ],
-              ),
-            ),
-            
-            // Bottom Navigation
-            _buildBottomNavigation(),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildScannerContent(String title) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            
-            // Título
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
-            ),
-            
-            const Spacer(),
-            
-            // Marco de escaneo
-            Container(
-              width: 200,
-              height: 200,
-              child: Stack(
-                children: [
-                  // Esquinas del marco
-                  ..._buildScannerCorners(),
-                ],
-              ),
-            ),
-            
-            const Spacer(),
-            
-            // Botón Escanear
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _showScanResult(title.contains('Multas')),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Escanear',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  List<Widget> _buildScannerCorners() {
-    return [
-      // Esquina superior izquierda
-      Positioned(
-        top: 0,
-        left: 0,
-        child: _buildCorner(
-          topLeft: true,
-        ),
-      ),
-      // Esquina superior derecha
-      Positioned(
-        top: 0,
-        right: 0,
-        child: _buildCorner(
-          topRight: true,
-        ),
-      ),
-      // Esquina inferior izquierda
-      Positioned(
-        bottom: 0,
-        left: 0,
-        child: _buildCorner(
-          bottomLeft: true,
-        ),
-      ),
-      // Esquina inferior derecha
-      Positioned(
-        bottom: 0,
-        right: 0,
-        child: _buildCorner(
-          bottomRight: true,
-        ),
-      ),
-    ];
-  }
-  
-  Widget _buildCorner({
-    bool topLeft = false,
-    bool topRight = false,
-    bool bottomLeft = false,
-    bool bottomRight = false,
-  }) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        border: Border(
-          top: (topLeft || topRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          left: (topLeft || bottomLeft) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          right: (topRight || bottomRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-          bottom: (bottomLeft || bottomRight) ? const BorderSide(color: Colors.black, width: 4) : BorderSide.none,
-        ),
-      ),
-    );
-  }
-  
-  void _showScanResult(bool isMulta) {
-    // Simular resultado aleatorio
-    bool isValid = DateTime.now().millisecondsSinceEpoch % 2 == 0;
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      appBar: AppBar(
+        title: const Text(
+          'Scanner',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.w500,
           ),
-          child: Container(
+        ),
+        backgroundColor: AppColors.primary,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 70,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(4)),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
+                const SizedBox(height: 20),
+                Text(
+                  'Escaneo de señales',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                     color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    isMulta ? 'Escaneo de Multas' : 'Escaneo de Señales',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                 ),
-                
-                const SizedBox(height: 40),
-                
-                // Icono de resultado
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: isValid ? Colors.blue[400] : Colors.blue[400],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isValid ? Icons.check : Icons.close,
-                    color: Colors.white,
-                    size: 60,
-                  ),
-                ),
-                
-                const SizedBox(height: 40),
-                
-                // Botón de resultado
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+
+                const SizedBox(height: 20),
+
+                // Imagen o mensaje
+                if (_imageFile != null)
+                  Image.file(_imageFile!)
+                else
+                  Container(
+                    height: 200,
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.image, size: 60, color: Colors.grey),
+                        SizedBox(height: 10),
+                        Text(
+                          'No hay imagen seleccionada',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
                     ),
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Loading
+                if (_isLoading) const CircularProgressIndicator(),
+
+                // Resultado
+                if (_descripcion != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      isValid ? 'Válida' : 'Inválida',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                      _descripcion!,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Botones
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        icon: const Icon(Icons.camera_alt, color: Colors.white),
+                        label: const Text(
+                          'Cámara',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 3,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                
-                if (!isValid) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'TEXTO EXPLICATIVO PORQUE ES INVÁLIDA',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
+                    SizedBox(
+                      width: 150,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.gallery),
+                        icon: const Icon(
+                          Icons.photo_library,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Galería',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 3,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+
+                const SizedBox(height: 30),
               ],
             ),
           ),
-        );
-      },
-    );
-  }
-  
-  Widget _buildBottomNavigation() {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(Icons.home, 'Inicio', () => context.go('/home')),
-          _buildNavItem(Icons.fullscreen, 'Escáner', () {}),
-          _buildNavItem(Icons.error, 'Emergencia', () {}),
-          _buildNavItem(Icons.map, 'Incidente', () {}),
-          _buildNavItem(Icons.groups, 'Comunidad', () {}),
-        ],
-      ),
     );
   }
-  
-  Widget _buildNavItem(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-} 
+}

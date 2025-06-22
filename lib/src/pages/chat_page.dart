@@ -28,27 +28,7 @@ class ChatPageState extends ConsumerState<ChatPage> {
   bool _isSpeaking = false;
   List<Message> messages = [
     Message('Hola, ¿en qué puedo ayudarte hoy?', DateTime.now(), false),
-    Message('Hola', DateTime.now(), false),
-    Message('¿Tienes alguna pregunta específica?', DateTime.now(), false),
-    Message('Que fue', DateTime.now(), false),
-    Message(
-      'Estoy aquí para ayudarte con cualquier duda.',
-      DateTime.now(),
-      false,
-    ),
-    Message('Hola', DateTime.now(), true),
-    Message(
-      '¿Te gustaría saber más sobre nuestros servicios?',
-      DateTime.now(),
-      false,
-    ),
-    Message('Como etas', DateTime.now(), false),
-    Message(
-      'Recuerda que puedes preguntarme cualquier cosa.',
-      DateTime.now(),
-      true,
-    ),
-    Message('¿Qué servicios ofrecen?', DateTime.now(), true),
+    Message('Adios', DateTime.now(), true),
   ];
   String? _speakingMessageText;
   final TTSController _ttsService = TTSController();
@@ -90,7 +70,6 @@ class ChatPageState extends ConsumerState<ChatPage> {
     });
 
     final response = await _gptChatService.getChatResponse(text);
-    print(response);
     message = Message(response, DateTime.now(), false);
     setState(() {
       _response = response;
@@ -122,12 +101,20 @@ class ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    User user = ref.watch(userProvider);
     return Scaffold(
-      appBar: appBar(user.name!, context),
-      // drawer: drawer(theme, context),
+      appBar: appBar('Consultas', context),
       body: Column(
         children: [
+          messages.isEmpty
+              ? Expanded(
+                child: Center(
+                  child: Text(
+                    'No hay mensajes aún',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 18),
+                  ),
+                ),
+              )
+              : const SizedBox.shrink(),
           Expanded(
             child: GroupedListView<Message, DateTime>(
               padding: const EdgeInsets.all(8),
