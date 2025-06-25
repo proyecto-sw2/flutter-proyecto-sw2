@@ -20,7 +20,6 @@ class LoginPage extends ConsumerStatefulWidget {
 class LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberPassword = false;
   bool _isLoading = false;
 
   Future<void> _login() async {
@@ -64,11 +63,13 @@ class LoginPageState extends ConsumerState<LoginPage> {
         // Guardar el token y email en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', responseData['token']);
-        // await prefs.setString('user_email', responseData['email']);
+        await prefs.setInt('user_id', responseData['user']['id']);
+        await prefs.setString('user_name', responseData['user']['name']);
+        await prefs.setString('user_email', responseData['user']['email']);
         User user = User.fromJson(responseData['user']);
         ref.read(userProvider.notifier).state = user;
-        print('Token guardado: ${responseData['token']}');
-        print('Email guardado: ${responseData['email']}');
+        // print('Token guardado: ${responseData['token']}');
+        // print('Email guardado: ${responseData['email']}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

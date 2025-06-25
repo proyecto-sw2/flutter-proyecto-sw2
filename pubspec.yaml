@@ -51,9 +51,15 @@ dependencies:
   camera: ^0.11.1
   path_provider: ^2.1.5
   cached_network_image: ^3.3.0
-  googleapis_auth: ^1.4.1
+  googleapis_auth: ^2.0.0
   googleapis: ^11.4.0
   animate_do: ^4.2.0
+  google_maps_flutter: ^2.12.3
+  geolocator: ^14.0.1
+  permission_handler: ^12.0.0+1
+  firebase_messaging: ^15.2.7
+  firebase_core: ^3.14.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +89,13 @@ flutter:
     - assets/quiz_questions.json
     - assets/traffic_signs/
     - assets/voice.json
+    - assets/markers/accident.png
+    - assets/markers/block.png
+    - assets/markers/other.png
+    - assets/markers/traffic.png
+    - assets/pin.json
+    - .env
+    - secrets/key.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/create_publication_page.dart';
+import 'package:flutter_sw1/src/pages/prueba_page.dart';
+import 'package:flutter_sw1/src/services/incident_service.dart';
 import 'package:flutter_sw1/src/services/publications_service.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:flutter_sw1/src/widgets/comments_bottom_sheet.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});
@@ -274,6 +278,13 @@ class _CommunityPageState extends State<CommunityPage> {
 
   Widget _buildPublicationCard(Map<String, dynamic> publication) {
     String? imageUrl = publication['ruta_media'];
+    Map<String, dynamic>? ubicacion = publication['incidente'];
+    LatLng? latLng;
+    if (ubicacion != null) {
+      String posicion = ubicacion['latitud_longitud'];
+      latLng = stringToLatLng(posicion);
+      // String titulo = ubicacion['tipo_incidente'];
+    }
     if (imageUrl != null) {
       imageUrl = imageUrl.trim().replaceAll('`', '').replaceAll(' ', '');
       if (imageUrl.isEmpty) imageUrl = null;
@@ -322,6 +333,39 @@ class _CommunityPageState extends State<CommunityPage> {
                     ],
                   ),
                 ),
+                ubicacion != null && ubicacion.isNotEmpty
+                    ? Column(
+                      spacing: 12,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return Pruebaa(initialTarget: latLng);
+                                },
+                              ),
+                            );
+                          },
+                          child: Lottie.asset(
+                            'assets/pin.json',
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Text(
+                          'Ir',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                    : const SizedBox.shrink(),
               ],
             ),
 

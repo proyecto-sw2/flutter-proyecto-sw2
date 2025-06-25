@@ -15,6 +15,8 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class ProfilePageState extends ConsumerState<ProfilePage> {
   SharedPreferences? _prefs;
+  String? name;
+  String? email;
   @override
   void initState() {
     super.initState();
@@ -23,11 +25,13 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _initializePreferences() async {
     _prefs = await SharedPreferences.getInstance();
+    name = _prefs?.getString('user_name') ?? 'Usuario';
+    email =
+        _prefs?.getString('user_email') ?? 'Correo electrónico no disponible';
   }
 
   @override
   Widget build(BuildContext context) {
-    User user = ref.watch(userProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -97,7 +101,7 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            user.name ?? 'Usuario',
+                            name ?? 'Nombre no disponible',
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.grey.shade800,
@@ -111,15 +115,9 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
                     const SizedBox(height: 30),
 
                     // Lista de datos
-                    _buildDataItem(
-                      user.name ?? 'Nombre no disponible',
-                      Icons.person,
-                    ),
+                    _buildDataItem(name!, Icons.person),
                     const SizedBox(height: 16),
-                    _buildDataItem(
-                      user.email ?? 'Correo electrónico no disponible',
-                      Icons.email,
-                    ),
+                    _buildDataItem(email!, Icons.email),
                     const SizedBox(height: 68),
                     ElevatedButton.icon(
                       onPressed: () {

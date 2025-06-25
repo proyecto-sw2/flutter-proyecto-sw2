@@ -1,14 +1,19 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sw1/main.dart';
 import 'package:flutter_sw1/src/pages/chat_page.dart';
 import 'package:flutter_sw1/src/pages/community_page.dart';
 import 'package:flutter_sw1/src/pages/emergency_page.dart';
 import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/pages/profile_page.dart';
+import 'package:flutter_sw1/src/pages/prueba_page.dart';
 import 'package:flutter_sw1/src/pages/quiz_page.dart';
 import 'package:flutter_sw1/src/pages/scanner_page.dart';
+import 'package:flutter_sw1/src/services/notification_service.dart';
+import 'package:flutter_sw1/src/services/user_service.dart';
 //import 'package:flutter_sw1/src/pages/scanner_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +23,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  SharedPreferences? _prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateUser();
+  }
+
+  Future<void> _updateUser() async {
+    _prefs = await SharedPreferences.getInstance();
+    final deviceToken = _prefs?.getString('fcm_token') ?? '';
+    final userId = _prefs?.getInt('user_id') ?? 0;
+    final userName = _prefs?.getString('user_name') ?? '';
+    if (deviceToken.isNotEmpty && userId != 0) {
+      await updateDispositivo(deviceToken, userId);
+      print('Dispositivo actualizado: $deviceToken para el usuario $userName');
+    } else {
+      print('No se pudo actualizar el dispositivo: datos incompletos');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,12 +60,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppColors.primary,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {
-            // Aquí puedes agregar la lógica para abrir un menú lateral si lo deseas
-          },
-        ),
+        leading: Container(),
       ),
       body: SafeArea(
         child: Container(
@@ -64,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                    ).backInLeft(duration: const Duration(milliseconds: 300)),
+                    ).backInLeft(duration: const Duration(milliseconds: 500)),
                     _buildOptionCard(
                       icon: Icons.search,
                       title: 'Consultas',
@@ -76,7 +97,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                    ).backInRight(duration: const Duration(milliseconds: 300)),
+                    ).backInRight(duration: const Duration(milliseconds: 500)),
                   ],
                 ),
                 Row(
@@ -93,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                    ).backInLeft(duration: const Duration(milliseconds: 400)),
+                    ).backInLeft(duration: const Duration(milliseconds: 600)),
                     _buildOptionCard(
                       icon: Icons.emergency,
                       title: 'Emergencia',
@@ -105,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                    ).backInRight(duration: const Duration(milliseconds: 400)),
+                    ).backInRight(duration: const Duration(milliseconds: 600)),
                   ],
                 ),
                 Row(
@@ -117,12 +138,10 @@ class _HomePageState extends State<HomePage> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => IncidentPage(),
-                          ),
+                          MaterialPageRoute(builder: (context) => Pruebaa()),
                         );
                       },
-                    ).backInLeft(duration: const Duration(milliseconds: 500)),
+                    ).backInLeft(duration: const Duration(milliseconds: 700)),
                     _buildOptionCard(
                       icon: Icons.groups,
                       title: 'Comunidad',
@@ -134,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                    ).backInRight(duration: const Duration(milliseconds: 500)),
+                    ).backInRight(duration: const Duration(milliseconds: 700)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -206,47 +225,46 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(builder: (context) => QuizPage()),
         );
       },
-      child:
-          Container(
-            width: double.infinity,
-            margin: EdgeInsets.symmetric(horizontal: 25),
-            height: MediaQuery.of(context).size.width * 0.40,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  spreadRadius: 1,
-                  blurRadius: 10,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+      child: Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 25),
+        height: MediaQuery.of(context).size.width * 0.40,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade300,
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 1),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.quiz, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 16),
-                const Text(
-                  'Quiz',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.quiz, color: Colors.white, size: 32),
             ),
-          ).backInUp(),
+            const SizedBox(width: 16),
+            const Text(
+              'Quiz',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ).backInUp(duration: const Duration(milliseconds: 800)),
     );
   }
 }

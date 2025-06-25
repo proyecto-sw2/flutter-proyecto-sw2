@@ -41,6 +41,9 @@
 
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Esta aplicación necesita acceso al micrófono para grabar videos.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Necesitamos tu ubicación para mostrarte en el mapa.</string>
+
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
