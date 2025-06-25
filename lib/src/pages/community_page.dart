@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/create_publication_page.dart';
-import 'package:flutter_sw1/src/pages/prueba_page.dart';
+import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/services/incident_service.dart';
 import 'package:flutter_sw1/src/services/publications_service.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
@@ -283,7 +283,6 @@ class _CommunityPageState extends State<CommunityPage> {
     if (ubicacion != null) {
       String posicion = ubicacion['latitud_longitud'];
       latLng = stringToLatLng(posicion);
-      // String titulo = ubicacion['tipo_incidente'];
     }
     if (imageUrl != null) {
       imageUrl = imageUrl.trim().replaceAll('`', '').replaceAll(' ', '');
@@ -343,7 +342,7 @@ class _CommunityPageState extends State<CommunityPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
-                                  return Pruebaa(initialTarget: latLng);
+                                  return IncidentPage(initialTarget: latLng);
                                 },
                               ),
                             );

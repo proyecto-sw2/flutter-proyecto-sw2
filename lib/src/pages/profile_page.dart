@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_sw1/src/models/user.dart';
 import 'package:flutter_sw1/src/pages/login_page.dart';
-import 'package:flutter_sw1/src/providers/user_provider.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

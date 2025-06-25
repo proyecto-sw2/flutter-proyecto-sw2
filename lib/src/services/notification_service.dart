@@ -5,7 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_sw1/src/pages/prueba_page.dart';
+import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/services/incident_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -58,7 +58,9 @@ class NotificationService {
       final longitud = message.data['longitud'];
       final LatLng latLng = stringToLatLng('$latitud,$longitud');
       navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (context) => Pruebaa(initialTarget: latLng)),
+        MaterialPageRoute(
+          builder: (context) => IncidentPage(initialTarget: latLng),
+        ),
       );
 
       print('==== App opened from notification ====');
@@ -108,7 +110,7 @@ class NotificationService {
       if (ir == true) {
         navigatorKey.currentState?.push(
           MaterialPageRoute(
-            builder: (context) => Pruebaa(initialTarget: latLng),
+            builder: (context) => IncidentPage(initialTarget: latLng),
           ),
         );
       }

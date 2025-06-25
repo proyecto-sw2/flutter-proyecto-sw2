@@ -68,8 +68,6 @@ class LoginPageState extends ConsumerState<LoginPage> {
         await prefs.setString('user_email', responseData['user']['email']);
         User user = User.fromJson(responseData['user']);
         ref.read(userProvider.notifier).state = user;
-        // print('Token guardado: ${responseData['token']}');
-        // print('Email guardado: ${responseData['email']}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

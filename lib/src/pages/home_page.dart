@@ -1,17 +1,13 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sw1/main.dart';
 import 'package:flutter_sw1/src/pages/chat_page.dart';
 import 'package:flutter_sw1/src/pages/community_page.dart';
 import 'package:flutter_sw1/src/pages/emergency_page.dart';
-import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/pages/profile_page.dart';
-import 'package:flutter_sw1/src/pages/prueba_page.dart';
+import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/pages/quiz_page.dart';
 import 'package:flutter_sw1/src/pages/scanner_page.dart';
-import 'package:flutter_sw1/src/services/notification_service.dart';
 import 'package:flutter_sw1/src/services/user_service.dart';
-//import 'package:flutter_sw1/src/pages/scanner_page.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,12 +31,8 @@ class _HomePageState extends State<HomePage> {
     _prefs = await SharedPreferences.getInstance();
     final deviceToken = _prefs?.getString('fcm_token') ?? '';
     final userId = _prefs?.getInt('user_id') ?? 0;
-    final userName = _prefs?.getString('user_name') ?? '';
     if (deviceToken.isNotEmpty && userId != 0) {
       await updateDispositivo(deviceToken, userId);
-      print('Dispositivo actualizado: $deviceToken para el usuario $userName');
-    } else {
-      print('No se pudo actualizar el dispositivo: datos incompletos');
     }
   }
 
@@ -138,7 +130,9 @@ class _HomePageState extends State<HomePage> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => Pruebaa()),
+                          MaterialPageRoute(
+                            builder: (context) => IncidentPage(),
+                          ),
                         );
                       },
                     ).backInLeft(duration: const Duration(milliseconds: 700)),
