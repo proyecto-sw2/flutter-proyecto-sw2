@@ -5,7 +5,9 @@ import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
-  const ProfilePage({super.key});
+  final String? userName;
+  final String? userEmail;
+  const ProfilePage(this.userName, this.userEmail, {super.key});
 
   @override
   ProfilePageState createState() => ProfilePageState();
@@ -13,8 +15,7 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class ProfilePageState extends ConsumerState<ProfilePage> {
   SharedPreferences? _prefs;
-  String? name;
-  String? email;
+
   @override
   void initState() {
     super.initState();
@@ -23,9 +24,6 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _initializePreferences() async {
     _prefs = await SharedPreferences.getInstance();
-    name = _prefs?.getString('user_name') ?? 'Usuario';
-    email =
-        _prefs?.getString('user_email') ?? 'Correo electrónico no disponible';
   }
 
   @override
@@ -99,7 +97,7 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            name ?? 'Nombre no disponible',
+                            widget.userName ?? 'Nombre no disponible',
                             style: TextStyle(
                               fontSize: 20,
                               color: Colors.grey.shade800,
@@ -113,9 +111,9 @@ class ProfilePageState extends ConsumerState<ProfilePage> {
                     const SizedBox(height: 30),
 
                     // Lista de datos
-                    _buildDataItem(name!, Icons.person),
+                    _buildDataItem(widget.userName ?? 'Cargando nombre...', Icons.person),
                     const SizedBox(height: 16),
-                    _buildDataItem(email!, Icons.email),
+                    _buildDataItem(widget.userEmail ?? 'Cargando email...', Icons.email),
                     const SizedBox(height: 68),
                     ElevatedButton.icon(
                       onPressed: () {

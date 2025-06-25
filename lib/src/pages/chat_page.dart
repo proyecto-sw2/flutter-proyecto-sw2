@@ -328,6 +328,7 @@ class ChatPageState extends ConsumerState<ChatPage> {
               _controller.clear();
               _inputNotifier.value = '';
               _lastWords = '';
+              _micOffset = 0.0;
             });
           },
           icon: Icon(Icons.clear, color: Colors.white, size: 32),

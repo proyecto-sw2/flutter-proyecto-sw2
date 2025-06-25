@@ -478,39 +478,6 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
 
                   const SizedBox(height: 20),
 
-                  // Campo de incidente (opcional)
-                  _buildInputSection(
-                    title: 'ID de Incidente (opcional)',
-                    child: TextFormField(
-                      controller: _incidenteController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: 'Ingresa el ID del incidente relacionado',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: AppColors.primary,
-                            width: 2,
-                          ),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.all(16),
-                        prefixIcon: Icon(
-                          Icons.warning_amber,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
                   // Sección de archivo
                   _buildInputSection(
                     title: 'Archivo multimedia (opcional)',

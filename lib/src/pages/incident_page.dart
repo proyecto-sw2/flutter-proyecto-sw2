@@ -135,81 +135,99 @@ class _IncidentPageState extends State<IncidentPage> {
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Agregar Marcador',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedMarkerType,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de Marcador',
-                  border: OutlineInputBorder(),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Agregar Incidente',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedMarkerType,
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de Incidente',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'accidente',
+                          child: Text('Accidente'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'bloqueo',
+                          child: Text('Bloqueo'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'trafico',
+                          child: Text('Tráfico'),
+                        ),
+                        DropdownMenuItem(value: 'otro', child: Text('Otro')),
+                      ],
+                      onChanged: (String? value) {
+                        if (value != null) {
+                          setModalState(() {
+                            _selectedMarkerType = value;
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _descController,
+                      decoration: const InputDecoration(
+                        labelText: 'Descripción',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    CheckboxListTile(
+                      title: const Text('Publicar'),
+                      value: _isPublic,
+                      onChanged: (bool? value) {
+                        setModalState(() {
+                          _isPublic = value ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        _addMarker();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        'Guardar Incidente',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'accidente',
-                    child: Text('Accidente'),
-                  ),
-                  DropdownMenuItem(value: 'bloqueo', child: Text('Bloqueo')),
-                  DropdownMenuItem(value: 'trafico', child: Text('Tráfico')),
-                  DropdownMenuItem(value: 'otro', child: Text('Otro')),
-                ],
-                onChanged: (String? value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedMarkerType = value;
-                    });
-                  }
-                },
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _descController,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: const Text('Publicar'),
-                value: _isPublic,
-                onChanged: (bool value) {
-                  setState(() {
-                    _isPublic = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  _addMarker();
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text('Guardar Marcador'),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            );
+          },
         );
       },
     );

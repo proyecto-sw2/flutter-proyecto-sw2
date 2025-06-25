@@ -9,6 +9,8 @@ import 'package:flutter_sw1/src/pages/quiz_page.dart';
 import 'package:flutter_sw1/src/pages/scanner_page.dart';
 import 'package:flutter_sw1/src/services/user_service.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,7 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   SharedPreferences? _prefs;
-
+  final auth = LocalAuthentication();
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,35 @@ class _HomePageState extends State<HomePage> {
     if (deviceToken.isNotEmpty && userId != 0) {
       await updateDispositivo(deviceToken, userId);
     }
+  }
+
+  Future<bool> autenticar() async {
+    bool puedeAutenticarse = await auth.canCheckBiometrics;
+    bool tieneBiometriaDisponible = await auth.isDeviceSupported();
+
+    if (puedeAutenticarse && tieneBiometriaDisponible) {
+      bool autenticado = await auth.authenticate(
+        localizedReason: 'Por favor autentícate para continuar',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
+        authMessages: [
+          const AndroidAuthMessages(
+            signInTitle: 'Autenticación requerida',
+            cancelButton: 'Cancelar',
+            biometricHint: 'Escanea tu huella',
+            biometricNotRecognized: 'No se reconoció la huella',
+            biometricSuccess: '¡Autenticación exitosa!',
+          ),
+        ],
+      );
+
+      return autenticado;
+    } else {
+      print('⚠️ El dispositivo no soporta biometría');
+    }
+    return false;
   }
 
   @override
@@ -69,11 +100,13 @@ class _HomePageState extends State<HomePage> {
                     _buildOptionCard(
                       icon: Icons.person,
                       title: 'Perfil',
-                      onTap: () {
+                      onTap: () async{
+                        final userName = _prefs?.getString('user_name') ?? 'Usuario';
+                        final userEmail = _prefs?.getString('user_email') ?? 'Correo electrónico no disponible';
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProfilePage(),
+                            builder: (context) => ProfilePage(userName, userEmail),
                           ),
                         );
                       },
@@ -110,7 +143,17 @@ class _HomePageState extends State<HomePage> {
                     _buildOptionCard(
                       icon: Icons.emergency,
                       title: 'Emergencia',
-                      onTap: () {
+                      onTap: () async {
+                        bool autenticado = await autenticar();
+                        if (!autenticado) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Autenticación fallida'),
+                            ),
+                          );
+                          return;
+                        }
                         Navigator.push(
                           context,
                           MaterialPageRoute(

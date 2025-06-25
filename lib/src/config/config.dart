@@ -8,7 +8,7 @@ class ApiConfig {
   // Para producción, cambiar a:
   // static const String baseUrl = 'https://tu-api-produccion.com';
   static const String baseIA = 'https://v9k5scrk-5000.brs.devtunnels.ms';
-
+  static const String baseIAImg = 'https://v9k5scrk-8000.brs.devtunnels.ms';
   static const String apiPath = '/api/auth';
 
   static String get loginUrl => '$baseUrl$apiPath/login';

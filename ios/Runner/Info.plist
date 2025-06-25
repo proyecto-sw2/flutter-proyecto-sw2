@@ -43,7 +43,8 @@
 		<string>Esta aplicación necesita acceso al micrófono para grabar videos.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Necesitamos tu ubicación para mostrarte en el mapa.</string>
-
+		<key>NSFaceIDUsageDescription</key>
+		<string>Necesitamos usar Face ID para autenticarte.</string>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
