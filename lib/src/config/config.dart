@@ -1,6 +1,6 @@
 class ApiConfig {
   // static const String baseUrl = 'http://localhost:3000';
-  static const String baseUrl = 'https://v9k5scrk-3000.brs.devtunnels.ms';
+  static const String baseUrl = 'http://192.168.0.7:3000';
   // https://v9k5scrk-3000.brs.devtunnels.ms/
   //Para probar en un dispositivo movil:
   //static const String baseUrl = 'http://direccionIPv4deSuComputadora:3000';

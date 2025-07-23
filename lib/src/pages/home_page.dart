@@ -143,17 +143,8 @@ class _HomePageState extends State<HomePage> {
                     _buildOptionCard(
                       icon: Icons.emergency,
                       title: 'Emergencia',
-                      onTap: () async {
-                        bool autenticado = await autenticar();
-                        if (!autenticado) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Autenticación fallida'),
-                            ),
-                          );
-                          return;
-                        }
+                      onTap: () {
+                        // 🚨 ACCESO DIRECTO SIN AUTENTICACIÓN PARA EMERGENCIAS
                         Navigator.push(
                           context,
                           MaterialPageRoute(
