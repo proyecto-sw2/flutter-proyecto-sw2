@@ -36,8 +36,8 @@ class _ScannerPageState extends State<ScannerPage> {
     });
 
     final url = Uri.parse(
-      'https://v9k5scrk-8000.brs.devtunnels.ms/analizar',
-    ); // Cambia si usas IP real
+      'http://192.168.0.7:8000/analizar',
+    ); // Para ambos dispositivos
 
     final request = http.MultipartRequest('POST', url);
     request.files.add(await http.MultipartFile.fromPath('file', imagen.path));

@@ -252,40 +252,24 @@ class EmergencyService {
       throw Exception('Token de autenticación no encontrado');
     }
 
-    // Crear request multipart
-    final request = http.MultipartRequest(
-      'POST',
+    // Crear el body JSON con números correctos
+    final body = {
+      'description': description ?? '',
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (location != null) 'location': location,
+      if (metadata != null) 'metadata': metadata,
+    };
+
+    // Enviar como JSON
+    final response = await http.post(
       Uri.parse('$baseUrl/api/emergency/alerts/panic-button'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
     );
-
-    // Agregar headers
-    request.headers['Authorization'] = 'Bearer $token';
-
-    // Agregar campos de texto
-    request.fields['description'] = description ?? '';
-    if (latitude != null) request.fields['latitude'] = latitude.toString();
-    if (longitude != null) request.fields['longitude'] = longitude.toString();
-    if (location != null) request.fields['location'] = location;
-    if (metadata != null) {
-      request.fields['metadata'] = jsonEncode(metadata);
-    }
-
-    // Agregar archivo de video si existe
-    if (videoFile != null) {
-      final videoStream = http.ByteStream(videoFile.openRead());
-      final videoLength = await videoFile.length();
-      
-      final videoMultipart = http.MultipartFile(
-        'video',
-        videoStream,
-        videoLength,
-        filename: 'panic_video_${DateTime.now().millisecondsSinceEpoch}.mp4',
-      );
-      request.files.add(videoMultipart);
-    }
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 201) {
       final jsonData = json.decode(response.body);
