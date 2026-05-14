@@ -19,7 +19,7 @@ class EmergencyService {
       throw Exception('Token de autenticación no encontrado');
     }
 
-    final url = '$baseUrl/api/emergency/contacts';
+    final url = '$baseUrl/emergency/contacts';
     print('🔗 Intentando obtener contactos de: $url');
     print('🔑 Token: ${token.substring(0, 20)}...');
 
@@ -70,7 +70,7 @@ class EmergencyService {
     }
 
     final response = await http.post(
-      Uri.parse('$baseUrl/api/emergency/contacts'),
+      Uri.parse('$baseUrl/emergency/contacts'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ class EmergencyService {
     }
 
     final response = await http.patch(
-      Uri.parse('$baseUrl/api/emergency/contacts/$id'),
+      Uri.parse('$baseUrl/emergency/contacts/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ class EmergencyService {
     }
 
     final response = await http.delete(
-      Uri.parse('$baseUrl/api/emergency/contacts/$id'),
+      Uri.parse('$baseUrl/emergency/contacts/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ class EmergencyService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/emergency/alerts'),
+      Uri.parse('$baseUrl/emergency/alerts'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -196,7 +196,7 @@ class EmergencyService {
     // Crear request multipart
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/api/emergency/alerts'),
+      Uri.parse('$baseUrl/emergency/alerts'),
     );
 
     // Agregar headers
@@ -263,7 +263,7 @@ class EmergencyService {
 
     // Enviar como JSON
     final response = await http.post(
-      Uri.parse('$baseUrl/api/emergency/alerts/panic-button'),
+      Uri.parse('$baseUrl/emergency/alerts/panic-button'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -291,7 +291,7 @@ class EmergencyService {
     }
 
     final response = await http.patch(
-      Uri.parse('$baseUrl/api/emergency/alerts/$id/resolve'),
+      Uri.parse('$baseUrl/emergency/alerts/$id/resolve'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ class EmergencyService {
     }
 
     final response = await http.patch(
-      Uri.parse('$baseUrl/api/emergency/alerts/$id/false-alarm'),
+      Uri.parse('$baseUrl/emergency/alerts/$id/false-alarm'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -350,7 +350,7 @@ class EmergencyService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/emergency/stats'),
+      Uri.parse('$baseUrl/emergency/stats'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -375,7 +375,7 @@ class EmergencyService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/emergency/notification-services/status'),
+      Uri.parse('$baseUrl/emergency/notification-services/status'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

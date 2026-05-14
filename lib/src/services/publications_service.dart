@@ -21,7 +21,7 @@ class PublicationsService {
 
       final response = await http.get(
         Uri.parse(
-          '${ApiConfig.baseUrl}/api/publicaciones?page=$page&limit=$limit',
+          '${ApiConfig.baseUrl}/publicaciones?page=$page&limit=$limit',
         ),
         headers: {
           'Authorization': 'Bearer $token',
@@ -50,7 +50,7 @@ class PublicationsService {
 
       final response = await http.get(
         Uri.parse(
-          '${ApiConfig.baseUrl}/api/publicaciones/$publicationId/comentarios',
+          '${ApiConfig.baseUrl}/publicaciones/$publicationId/comentarios',
         ),
         headers: {
           'Authorization': 'Bearer $token',
@@ -75,7 +75,7 @@ class PublicationsService {
   ) async {
     try {
       final url =
-          '${ApiConfig.baseUrl}/api/publicaciones/$publicationId/comentarios';
+          '${ApiConfig.baseUrl}/publicaciones/$publicationId/comentarios';
       print('🔗 URL de comentario: $url');
       print('📝 Contenido: $content');
 
@@ -123,7 +123,7 @@ class PublicationsService {
   ) async {
     try {
       final url =
-          '${ApiConfig.baseUrl}/api/publicaciones/$publicationId/comentarios/$parentCommentId/respuestas';
+          '${ApiConfig.baseUrl}/publicaciones/$publicationId/comentarios/$parentCommentId/respuestas';
       print('🔗 URL de respuesta: $url');
       print('📝 Contenido: $content');
 
@@ -180,7 +180,7 @@ class PublicationsService {
   static Future<void> createPubMaps(String titulo, String desc, int id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final url = ApiConfig.baseUrl;
-    final uri = Uri.parse('$url/api/publicaciones');
+    final uri = Uri.parse('$url/publicaciones');
     final token = prefs.getString('auth_token') ?? '';
     final contenidoTexto = '$titulo -- $desc';
 

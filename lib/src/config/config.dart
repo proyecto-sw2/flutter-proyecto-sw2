@@ -1,17 +1,13 @@
 class ApiConfig {
-  // Para ambos dispositivos (emulador y físico)
-  static const String baseUrl = 'http://192.168.0.7:3000';
-  // https://v9k5scrk-3000.brs.devtunnels.ms/
-  //Para probar en un dispositivo movil:
-  //static const String baseUrl = 'http://direccionIPv4deSuComputadora:3000';
-  //ejemplo :'http://192.168.1.100:3000'
-  // Para producción, cambiar a:
-  // static const String baseUrl = 'https://tu-api-produccion.com';
-  // Para ambos dispositivos (emulador y físico)
-  static const String baseIA = 'http://192.168.0.7:5000';
-  // Para ambos dispositivos (emulador y físico)
-  static const String baseIAImg = 'http://192.168.0.7:8000';
-  static const String apiPath = '/api/auth';
+  // TU ÚNICA URL DE NGROK (Cámbiala cada vez que inicies ngrok)
+  static const String ngrokUrl = 'https://nasir-unsaveable-marcela.ngrok-free.dev';
+
+  // Redirigimos por prefijos definidos en el proxy.js
+  static const String baseUrl = '$ngrokUrl/api';    // Apunta al 3000
+  static const String baseIA = '$ngrokUrl/ia';      // Apunta al 5000
+  static const String baseIAImg = '$ngrokUrl/img';  // Apunta al 8000
+
+  static const String apiPath = '/auth'; // Quitamos /api porque ya está en baseUrl
 
   static String get loginUrl => '$baseUrl$apiPath/login';
   static String get registerUrl => '$baseUrl$apiPath/register';

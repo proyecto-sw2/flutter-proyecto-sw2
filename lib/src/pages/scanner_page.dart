@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sw1/src/config/config.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -35,9 +36,7 @@ class _ScannerPageState extends State<ScannerPage> {
       _isLoading = true;
     });
 
-    final url = Uri.parse(
-      'http://192.168.0.7:8000/analizar',
-    ); // Para ambos dispositivos
+    final url = Uri.parse('${ApiConfig.baseIAImg}/analizar');
 
     final request = http.MultipartRequest('POST', url);
     request.files.add(await http.MultipartFile.fromPath('file', imagen.path));

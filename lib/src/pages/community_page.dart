@@ -333,37 +333,38 @@ class _CommunityPageState extends State<CommunityPage> {
                   ),
                 ),
                 ubicacion != null && ubicacion.isNotEmpty
-                    ? Column(
-                      spacing: 12,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return IncidentPage(initialTarget: latLng);
-                                },
+                    ? GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return IncidentPage(initialTarget: latLng);
+                              },
+                            ),
+                          );
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Lottie.asset(
+                              'assets/pin.json',
+                              width: 28,
+                              height: 28,
+                              fit: BoxFit.cover,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Ir',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
-                            );
-                          },
-                          child: Lottie.asset(
-                            'assets/pin.json',
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.cover,
-                          ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          'Ir',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    )
+                      )
                     : const SizedBox.shrink(),
               ],
             ),

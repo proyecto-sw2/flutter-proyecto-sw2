@@ -12,8 +12,8 @@ import 'package:flutter/foundation.dart'
 /// // ...
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
-/// );
-/// ```
+/// );dart pub global activate flutterfire_cli
+/// ```flutterfire configure --project=notificaciones-abogado
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {

@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<Incidente?> crearIncidente(String tipo, String desc, LatLng latLon) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final url = ApiConfig.baseUrl;
-  final uri = Uri.parse('$url/api/incidentes');
+  final uri = Uri.parse('$url/incidentes');
   final token = prefs.getString('auth_token') ?? '';
   final latLngString = latLngToString(latLon);
 
@@ -58,7 +58,7 @@ Future<Incidentes?> getIncidentes() async {
 
   try {
     final response = await http.get(
-      Uri.parse('$url/api/incidentes'),
+      Uri.parse('$url/incidentes'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

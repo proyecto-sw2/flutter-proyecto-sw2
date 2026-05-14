@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future<List<User>> obtenerUsuarios() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final url = ApiConfig.baseUrl;
-  final uri = Uri.parse('$url/api/users');
+  final uri = Uri.parse('$url/users');
   final token = prefs.getString('auth_token') ?? '';
 
   final response = await http.get(
@@ -30,7 +30,7 @@ Future<List<User>> obtenerUsuarios() async {
 Future<void> updateDispositivo(String dispositivo, int id) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final url = ApiConfig.baseUrl;
-  final uri = Uri.parse('$url/api/users/${id.toString()}');
+  final uri = Uri.parse('$url/users/${id.toString()}');
   final token = prefs.getString('auth_token') ?? '';
 
   final response = await http.patch(
