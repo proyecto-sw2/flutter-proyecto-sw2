@@ -97,6 +97,7 @@ flutter:
     - assets/markers/traffic.png
     - assets/pin.json
     - .env
+    - assets/secret.json
   # - secrets/key.json
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380658192783",
+    "project_id": "notificaciones-abogado",
+    "storage_bucket": "notificaciones-abogado.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380658192783:android:904cf8e0530d9c5ee27bfa",
+        "android_client_info": {
+          "package_name": "com.example.flutter_sw1_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0UymGVOvGp24BMLL90MzzGDw8dsi0qgY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

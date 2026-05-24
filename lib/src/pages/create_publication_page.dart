@@ -252,7 +252,7 @@ class _CreatePublicationPageState extends State<CreatePublicationPage>
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('${ApiConfig.baseUrl}/api/publicaciones'),
+        Uri.parse('${ApiConfig.baseUrl}/publicaciones'),
       );
 
       // Headers

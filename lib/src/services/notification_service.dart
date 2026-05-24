@@ -54,14 +54,17 @@ class NotificationService {
 
       if (context == null) return;
 
-      final latitud = message.data['latitud'];
-      final longitud = message.data['longitud'];
-      final LatLng latLng = stringToLatLng('$latitud,$longitud');
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => IncidentPage(initialTarget: latLng),
-        ),
-      );
+      final latitud = message.data['latitud'] ?? message.data['latitude'];
+      final longitud = message.data['longitud'] ?? message.data['longitude'];
+      
+      if (latitud != null && longitud != null) {
+        final LatLng latLng = stringToLatLng('$latitud,$longitud');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => IncidentPage(initialTarget: latLng),
+          ),
+        );
+      }
 
       print('==== App opened from notification ====');
     });
@@ -70,44 +73,39 @@ class NotificationService {
       print(
         'Foreground message: ${message.notification?.title} - ${message.notification?.body}',
       );
-      // navigatorKey.currentContext?.go('/prueba');
-      // Aquí puedes mostrar una notificación local si es necesario
+      
       final context = navigatorKey.currentContext;
-
       if (context == null) return;
 
-      final latitud = message.data['latitud'];
-      final longitud = message.data['longitud'];
-      final LatLng latLng = stringToLatLng('$latitud,$longitud');
-      final title = message.notification?.title ?? 'Nuevo incidente';
-      final body =
-          message.notification?.body ?? 'Se ha reportado un nuevo incidente.';
+      final latitud = message.data['latitud'] ?? message.data['latitude'];
+      final longitud = message.data['longitud'] ?? message.data['longitude'];
+      final title = message.notification?.title ?? 'Nueva notificación';
+      final body = message.notification?.body ?? 'Tienes una nueva actualización.';
+
       // Mostrar el diálogo
       final bool? ir = await showDialog<bool>(
         context: context,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: const Text('Nuevo incidente'),
-            content: Text('$title - $body . ¿Deseas ver donde ocurrió?'),
+            title: Text(title),
+            content: Text('$body\n¿Deseas ver los detalles?'),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop(false); // No ir
-                },
-                child: const Text('Cancelar'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cerrar'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop(true);
-                },
-                child: const Text('Ir'),
-              ),
+              if (latitud != null && longitud != null)
+                ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Ver Mapa'),
+                ),
             ],
           );
         },
       );
 
-      if (ir == true) {
+      if (ir == true && latitud != null && longitud != null) {
+        final LatLng latLng = stringToLatLng('$latitud,$longitud');
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (context) => IncidentPage(initialTarget: latLng),
