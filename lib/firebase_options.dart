@@ -12,8 +12,8 @@ import 'package:flutter/foundation.dart'
 /// // ...
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
-/// );dart pub global activate flutterfire_cli
-/// ```flutterfire configure --project=notificaciones-abogado
+/// );
+/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -41,48 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDxvbTOAqMO0zHQAiGwwU6r3MzQyc7OPmM',
-    appId: '1:570490622645:web:585437f76fac124f7164fc',
-    messagingSenderId: '570490622645',
-    projectId: 'proyecto-sw1-c8ae5',
-    authDomain: 'proyecto-sw1-c8ae5.firebaseapp.com',
-    storageBucket: 'proyecto-sw1-c8ae5.firebasestorage.app',
-    measurementId: 'G-CJZ16RJK9C',
+    apiKey: 'AIzaSyBHG7LNWNMf6ra7rFOTLgqlQzhQXVZGkJ4',
+    appId: '1:380658192783:web:ea4f74ca61447fe5e27bfa',
+    messagingSenderId: '380658192783',
+    projectId: 'notificaciones-abogado',
+    authDomain: 'notificaciones-abogado.firebaseapp.com',
+    storageBucket: 'notificaciones-abogado.firebasestorage.app',
+    measurementId: 'G-31J60BXVWY',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDGYQ2ALqy36V21XewLal6XSynT7xDSkoY',
-    appId: '1:570490622645:android:aec3333007629da67164fc',
-    messagingSenderId: '570490622645',
-    projectId: 'proyecto-sw1-c8ae5',
-    storageBucket: 'proyecto-sw1-c8ae5.firebasestorage.app',
+    apiKey: 'AIzaSyD0UymGVOvGp24BMLL90MzzGDw8dsi0qgY',
+    appId: '1:380658192783:android:904cf8e0530d9c5ee27bfa',
+    messagingSenderId: '380658192783',
+    projectId: 'notificaciones-abogado',
+    storageBucket: 'notificaciones-abogado.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDgEciTSW9K99URPWJHR67LY-Ji169XZQ4',
-    appId: '1:570490622645:ios:0987c129136aae777164fc',
-    messagingSenderId: '570490622645',
-    projectId: 'proyecto-sw1-c8ae5',
-    storageBucket: 'proyecto-sw1-c8ae5.firebasestorage.app',
+    apiKey: 'AIzaSyCPk8Lk4tYSVTZNbPIdPTug6fOt1fWawac',
+    appId: '1:380658192783:ios:0645240343198982e27bfa',
+    messagingSenderId: '380658192783',
+    projectId: 'notificaciones-abogado',
+    storageBucket: 'notificaciones-abogado.firebasestorage.app',
     iosBundleId: 'com.example.flutterSw1',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDgEciTSW9K99URPWJHR67LY-Ji169XZQ4',
-    appId: '1:570490622645:ios:0987c129136aae777164fc',
-    messagingSenderId: '570490622645',
-    projectId: 'proyecto-sw1-c8ae5',
-    storageBucket: 'proyecto-sw1-c8ae5.firebasestorage.app',
+    apiKey: 'AIzaSyCPk8Lk4tYSVTZNbPIdPTug6fOt1fWawac',
+    appId: '1:380658192783:ios:0645240343198982e27bfa',
+    messagingSenderId: '380658192783',
+    projectId: 'notificaciones-abogado',
+    storageBucket: 'notificaciones-abogado.firebasestorage.app',
     iosBundleId: 'com.example.flutterSw1',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDxvbTOAqMO0zHQAiGwwU6r3MzQyc7OPmM',
-    appId: '1:570490622645:web:2f948af0fbf852907164fc',
-    messagingSenderId: '570490622645',
-    projectId: 'proyecto-sw1-c8ae5',
-    authDomain: 'proyecto-sw1-c8ae5.firebaseapp.com',
-    storageBucket: 'proyecto-sw1-c8ae5.firebasestorage.app',
-    measurementId: 'G-LKYYK2X22L',
+    apiKey: 'AIzaSyBHG7LNWNMf6ra7rFOTLgqlQzhQXVZGkJ4',
+    appId: '1:380658192783:web:87c45ce5f2f9de4ee27bfa',
+    messagingSenderId: '380658192783',
+    projectId: 'notificaciones-abogado',
+    authDomain: 'notificaciones-abogado.firebaseapp.com',
+    storageBucket: 'notificaciones-abogado.firebasestorage.app',
+    measurementId: 'G-RDJNBDLCE5',
   );
 }

@@ -30,11 +30,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateUser() async {
-    _prefs = await SharedPreferences.getInstance();
-    final deviceToken = _prefs?.getString('fcm_token') ?? '';
-    final userId = _prefs?.getInt('user_id') ?? 0;
-    if (deviceToken.isNotEmpty && userId != 0) {
-      await updateDispositivo(deviceToken, userId);
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      final deviceToken = _prefs?.getString('fcm_token') ?? '';
+      final userId = _prefs?.getInt('user_id') ?? 0;
+      if (deviceToken.isNotEmpty && userId != 0) {
+        await updateDispositivo(deviceToken, userId);
+      }
+    } catch (e) {
+      debugPrint('⚠️ No se pudo actualizar el dispositivo en el servidor: $e');
     }
   }
 
