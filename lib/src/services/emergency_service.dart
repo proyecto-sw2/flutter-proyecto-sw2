@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_sw1/src/config/config.dart';
 import 'package:flutter_sw1/src/models/emergency_alert.dart';
@@ -9,49 +10,73 @@ import 'package:flutter_sw1/src/models/emergency_contact.dart';
 class EmergencyService {
   static const String baseUrl = ApiConfig.baseUrl;
 
-  // ===== CONTACTOS DE EMERGENCIA =====
+  /// Tiempo máximo de espera para cada petición HTTP.
+  static const Duration _timeout = Duration(seconds: 30);
 
-  static Future<List<EmergencyContact>> getEmergencyContacts() async {
+  // ────────────────────────────────────────────────────────────────────────────
+  // Helper: obtener token y validar
+  // ────────────────────────────────────────────────────────────────────────────
+
+  static Future<String> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
+    if (token.isEmpty) throw Exception('Token de autenticación no encontrado');
+    return token;
+  }
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
+  // ────────────────────────────────────────────────────────────────────────────
+  // Helper: decodificar respuesta con manejo robusto de errores
+  // ────────────────────────────────────────────────────────────────────────────
+
+  static String _safeErrorMessage(http.Response response) {
+    final body = response.body;
+    // Si la respuesta es HTML (ej: ngrok 502, servidor caído) no la mostramos cruda
+    if (body.trimLeft().startsWith('<')) {
+      return 'Error ${response.statusCode}: El servidor no está disponible temporalmente. '
+          'Verifica tu conexión e inténtalo de nuevo.';
     }
+    // Intentar extraer mensaje JSON
+    try {
+      final json = jsonDecode(body);
+      return json['message']?.toString() ??
+          json['error']?.toString() ??
+          'Error ${response.statusCode}';
+    } catch (_) {
+      final preview = body.length > 120 ? '${body.substring(0, 120)}…' : body;
+      return 'Error ${response.statusCode}: $preview';
+    }
+  }
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // CONTACTOS DE EMERGENCIA
+  // ────────────────────────────────────────────────────────────────────────────
+
+  static Future<List<EmergencyContact>> getEmergencyContacts() async {
+    final token = await _getToken();
     final url = '$baseUrl/emergency/contacts';
-    print('🔗 Intentando obtener contactos de: $url');
-    print('🔑 Token: ${token.substring(0, 20)}...');
 
     try {
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print('📊 Status Code: ${response.statusCode}');
-      print('📄 Response Body: ${response.body}');
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
-        print('✅ Contactos obtenidos: ${jsonList.length}');
-        return jsonList.map((json) => EmergencyContact.fromJson(json)).toList();
-      } else {
-        throw Exception('Error al obtener contactos: ${response.statusCode} - ${response.body}');
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((j) => EmergencyContact.fromJson(j)).toList();
       }
-    } catch (e) {
-      print('❌ Error en getEmergencyContacts: $e');
-      
-      // 🚨 SOLUCIÓN TEMPORAL: Si el endpoint no existe, devolver lista vacía
-      if (e.toString().contains('404') || e.toString().contains('Connection refused')) {
-        print('⚠️ Endpoint no disponible, devolviendo lista vacía');
-        return [];
-      }
-      
-      throw Exception('Error de conexión al obtener contactos: $e');
+
+      // En lugar de lanzar con HTML crudo, enviamos mensaje amigable
+      throw Exception(_safeErrorMessage(response));
+    } on SocketException {
+      throw Exception('Sin conexión a internet. Verifica tu red.');
+    } on http.ClientException catch (e) {
+      throw Exception('Error de red: ${e.message}');
     }
   }
 
@@ -62,34 +87,29 @@ class EmergencyService {
     String? relationship,
     int priority = 1,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/emergency/contacts'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'name': name,
-        'phone': phone,
-        'email': email,
-        'relationship': relationship,
-        'priority': priority,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$baseUrl/emergency/contacts'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'name': name,
+            'phone': phone,
+            if (email != null) 'email': email,
+            if (relationship != null) 'relationship': relationship,
+            'priority': priority,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 201) {
-      final jsonData = json.decode(response.body);
-      return EmergencyContact.fromJson(jsonData);
-    } else {
-      throw Exception('Error al crear contacto: ${response.body}');
+      return EmergencyContact.fromJson(jsonDecode(response.body));
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
   static Future<EmergencyContact> updateEmergencyContact({
@@ -100,143 +120,75 @@ class EmergencyService {
     String? relationship,
     int? priority,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.patch(
-      Uri.parse('$baseUrl/emergency/contacts/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        if (name != null) 'name': name,
-        if (phone != null) 'phone': phone,
-        if (email != null) 'email': email,
-        if (relationship != null) 'relationship': relationship,
-        if (priority != null) 'priority': priority,
-      }),
-    );
+    final response = await http
+        .patch(
+          Uri.parse('$baseUrl/emergency/contacts/$id'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            if (name != null) 'name': name,
+            if (phone != null) 'phone': phone,
+            if (email != null) 'email': email,
+            if (relationship != null) 'relationship': relationship,
+            if (priority != null) 'priority': priority,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return EmergencyContact.fromJson(jsonData);
-    } else {
-      throw Exception('Error al actualizar contacto: ${response.body}');
+      return EmergencyContact.fromJson(jsonDecode(response.body));
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
   static Future<void> deleteEmergencyContact(int id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
+    final response = await http
+        .delete(
+          Uri.parse('$baseUrl/emergency/contacts/$id'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        )
+        .timeout(_timeout);
 
-    final response = await http.delete(
-      Uri.parse('$baseUrl/emergency/contacts/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Error al eliminar contacto: ${response.body}');
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception(_safeErrorMessage(response));
     }
   }
 
-  // ===== ALERTAS DE EMERGENCIA =====
+  // ────────────────────────────────────────────────────────────────────────────
+  // ALERTAS DE EMERGENCIA
+  // ────────────────────────────────────────────────────────────────────────────
 
   static Future<List<EmergencyAlert>> getEmergencyAlerts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/emergency/alerts'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    final response = await http
+        .get(
+          Uri.parse('$baseUrl/emergency/alerts'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((json) => EmergencyAlert.fromJson(json)).toList();
-    } else {
-      throw Exception('Error al obtener alertas: ${response.body}');
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.map((j) => EmergencyAlert.fromJson(j)).toList();
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
-  static Future<EmergencyAlert> createEmergencyAlert({
-    String? description,
-    double? latitude,
-    double? longitude,
-    String? location,
-    AlertType type = AlertType.panicButton,
-    Map<String, dynamic>? metadata,
-    File? videoFile,
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    // Crear request multipart
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$baseUrl/emergency/alerts'),
-    );
-
-    // Agregar headers
-    request.headers['Authorization'] = 'Bearer $token';
-
-    // Agregar campos de texto
-    request.fields['description'] = description ?? '';
-    if (latitude != null) request.fields['latitude'] = latitude.toString();
-    if (longitude != null) request.fields['longitude'] = longitude.toString();
-    if (location != null) request.fields['location'] = location;
-    request.fields['type'] = type.toString().split('.').last;
-    if (metadata != null) {
-      request.fields['metadata'] = jsonEncode(metadata);
-    }
-
-    // Agregar archivo de video si existe
-    if (videoFile != null) {
-      final videoStream = http.ByteStream(videoFile.openRead());
-      final videoLength = await videoFile.length();
-      
-      final videoMultipart = http.MultipartFile(
-        'video',
-        videoStream,
-        videoLength,
-        filename: 'emergency_video_${DateTime.now().millisecondsSinceEpoch}.mp4',
-      );
-      request.files.add(videoMultipart);
-    }
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode == 201) {
-      final jsonData = json.decode(response.body);
-      return EmergencyAlert.fromJson(jsonData);
-    } else {
-      throw Exception('Error al crear alerta: ${response.body}');
-    }
-  }
-
+  /// Activa el botón de pánico con o sin video.
+  /// Usa JSON si no hay video, multipart si hay video.
   static Future<EmergencyAlert> triggerPanicButton({
     String? description,
     double? latitude,
@@ -245,147 +197,223 @@ class EmergencyService {
     Map<String, dynamic>? metadata,
     File? videoFile,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
+    if (videoFile != null) {
+      // Multipart con video
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/emergency/alerts/panic-button'),
+      );
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['description'] = description ?? '';
+      if (latitude != null) request.fields['latitude'] = latitude.toString();
+      if (longitude != null) request.fields['longitude'] = longitude.toString();
+      if (location != null) request.fields['location'] = location;
+      if (metadata != null) request.fields['metadata'] = jsonEncode(metadata);
+
+      request.files.add(await http.MultipartFile.fromPath(
+        'video',
+        videoFile.path,
+        filename: 'emergency_${DateTime.now().millisecondsSinceEpoch}.mp4',
+        contentType: MediaType('video', 'mp4'),
+      ));
+
+      final streamed = await request.send().timeout(_timeout);
+      final response = await http.Response.fromStream(streamed);
+
+      if (response.statusCode == 201) {
+        return EmergencyAlert.fromJson(jsonDecode(response.body));
+      }
+      throw Exception(_safeErrorMessage(response));
+    } else {
+      // JSON sin video
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/emergency/alerts/panic-button'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'description': description ?? '',
+              if (latitude != null) 'latitude': latitude,
+              if (longitude != null) 'longitude': longitude,
+              if (location != null) 'location': location,
+              if (metadata != null) 'metadata': metadata,
+            }),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 201) {
+        return EmergencyAlert.fromJson(jsonDecode(response.body));
+      }
+      throw Exception(_safeErrorMessage(response));
+    }
+  }
+
+  /// Fase 2: Sube el video y lo asocia a una alerta existente
+  static Future<EmergencyAlert> attachVideo(int alertId, File videoFile) async {
+    final token = await _getToken();
+
+    final request = http.MultipartRequest(
+      'PATCH',
+      Uri.parse('$baseUrl/emergency/alerts/$alertId/video'),
+    );
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'video',
+      videoFile.path,
+      filename: 'emergency_video_${DateTime.now().millisecondsSinceEpoch}.mp4',
+      contentType: MediaType('video', 'mp4'),
+    ));
+
+    // Damos un timeout largo (60s) para videos pesados
+    final streamed = await request.send().timeout(const Duration(seconds: 60));
+    final response = await http.Response.fromStream(streamed);
+
+    if (response.statusCode == 200) {
+      return EmergencyAlert.fromJson(jsonDecode(response.body));
+    }
+    throw Exception(_safeErrorMessage(response));
+  }
+
+  /// Sincroniza una alerta generada sin internet al recuperar conectividad.
+  static Future<EmergencyAlert> syncOfflineAlert({
+    String? description,
+    double? latitude,
+    double? longitude,
+    String? location,
+    String? offlineTimestamp,
+    Map<String, dynamic>? metadata,
+    File? videoFile,
+  }) async {
+    final token = await _getToken();
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/emergency/alerts/sync'),
+    );
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['description'] = description ?? '';
+    if (latitude != null) request.fields['latitude'] = latitude.toString();
+    if (longitude != null) request.fields['longitude'] = longitude.toString();
+    if (location != null) request.fields['location'] = location;
+    if (offlineTimestamp != null) {
+      request.fields['offlineTimestamp'] = offlineTimestamp;
+    }
+    if (metadata != null) {
+      request.fields['metadata'] = jsonEncode(metadata);
     }
 
-    // Crear el body JSON con números correctos
-    final body = {
-      'description': description ?? '',
-      if (latitude != null) 'latitude': latitude,
-      if (longitude != null) 'longitude': longitude,
-      if (location != null) 'location': location,
-      if (metadata != null) 'metadata': metadata,
-    };
+    if (videoFile != null && videoFile.existsSync()) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'video',
+        videoFile.path,
+        filename: 'emergency_offline_${DateTime.now().millisecondsSinceEpoch}.mp4',
+        contentType: MediaType('video', 'mp4'),
+      ));
+    }
 
-    // Enviar como JSON
-    final response = await http.post(
-      Uri.parse('$baseUrl/emergency/alerts/panic-button'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(body),
-    );
+    final streamed = await request.send().timeout(const Duration(seconds: 60));
+    final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode == 201) {
-      final jsonData = json.decode(response.body);
-      return EmergencyAlert.fromJson(jsonData);
-    } else {
-      throw Exception('Error al activar botón de pánico: ${response.body}');
+      return EmergencyAlert.fromJson(jsonDecode(response.body));
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
   static Future<EmergencyAlert> resolveEmergencyAlert({
     required int id,
     String? resolutionNotes,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.patch(
-      Uri.parse('$baseUrl/emergency/alerts/$id/resolve'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        if (resolutionNotes != null) 'resolutionNotes': resolutionNotes,
-      }),
-    );
+    final response = await http
+        .patch(
+          Uri.parse('$baseUrl/emergency/alerts/$id/resolve'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            if (resolutionNotes != null) 'resolutionNotes': resolutionNotes,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return EmergencyAlert.fromJson(jsonData);
-    } else {
-      throw Exception('Error al resolver alerta: ${response.body}');
+      return EmergencyAlert.fromJson(jsonDecode(response.body));
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
   static Future<EmergencyAlert> markAsFalseAlarm({
     required int id,
     String? resolutionNotes,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.patch(
-      Uri.parse('$baseUrl/emergency/alerts/$id/false-alarm'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        if (resolutionNotes != null) 'resolutionNotes': resolutionNotes,
-      }),
-    );
+    final response = await http
+        .patch(
+          Uri.parse('$baseUrl/emergency/alerts/$id/false-alarm'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            if (resolutionNotes != null) 'resolutionNotes': resolutionNotes,
+          }),
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return EmergencyAlert.fromJson(jsonData);
-    } else {
-      throw Exception('Error al marcar como falsa alarma: ${response.body}');
+      return EmergencyAlert.fromJson(jsonDecode(response.body));
     }
+    throw Exception(_safeErrorMessage(response));
   }
 
-  // ===== ESTADÍSTICAS =====
+  // ────────────────────────────────────────────────────────────────────────────
+  // ESTADÍSTICAS Y ESTADO
+  // ────────────────────────────────────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> getEmergencyStats() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/emergency/stats'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    final response = await http
+        .get(
+          Uri.parse('$baseUrl/emergency/stats'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Error al obtener estadísticas: ${response.body}');
+      return jsonDecode(response.body) as Map<String, dynamic>;
     }
+    throw Exception(_safeErrorMessage(response));
   }
-
-  // ===== SERVICIOS DE NOTIFICACIÓN =====
 
   static Future<Map<String, dynamic>> getNotificationServicesStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await _getToken();
 
-    if (token.isEmpty) {
-      throw Exception('Token de autenticación no encontrado');
-    }
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/emergency/notification-services/status'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    final response = await http
+        .get(
+          Uri.parse('$baseUrl/emergency/notification-services/status'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        )
+        .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception('Error al obtener estado de servicios: ${response.body}');
+      return jsonDecode(response.body) as Map<String, dynamic>;
     }
+    throw Exception(_safeErrorMessage(response));
   }
-} 
+}

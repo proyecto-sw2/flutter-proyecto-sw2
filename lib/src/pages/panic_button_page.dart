@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter_sw1/src/models/emergency_alert.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter_sw1/src/services/emergency_service.dart';
-import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:flutter_sw1/src/services/offline_emergency_queue.dart';
+import 'package:flutter_sw1/src/services/emergency_sync_service.dart';
+
+const int _kMaxRecordingSeconds = 900; // 15 minutos (CU01)
 
 class PanicButtonPage extends StatefulWidget {
   const PanicButtonPage({super.key});
@@ -17,21 +19,29 @@ class PanicButtonPage extends StatefulWidget {
 
 class _PanicButtonPageState extends State<PanicButtonPage>
     with WidgetsBindingObserver {
+  // ── Cámara ──────────────────────────────────────────────────────────────────
   CameraController? _cameraController;
+
+  // ── Estado ──────────────────────────────────────────────────────────────────
   bool _isRecording = false;
   bool _isLoading = false;
-  Position? _currentPosition;
-  String? _currentLocation;
+  bool _hasInternet = true;
   File? _recordedVideo;
-  int _recordingDuration = 0;
+  int _recordingSeconds = 0;
   Timer? _recordingTimer;
+  int? _currentAlertId;
+
+  // ── Ubicación ───────────────────────────────────────────────────────────────
+  Position? _position;
+  String? _locationLabel;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeCamera();
-    _getCurrentLocation();
+    _initCamera();
+    _fetchLocation();
+    _checkConnectivity();
   }
 
   @override
@@ -44,386 +54,584 @@ class _PanicButtonPageState extends State<PanicButtonPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
+    // Detener al ir a background solo si NO queremos background recording.
+    // Cuando el CU01 implemente ForegroundService se quitará esta restricción.
+    if (state == AppLifecycleState.paused && _isRecording) {
       _stopRecording();
     }
   }
 
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) return;
+  // ── Inicializar cámara ───────────────────────────────────────────────────────
 
-    _cameraController = CameraController(
-      cameras.first,
-      ResolutionPreset.high,
-      enableAudio: true,
-    );
-
+  Future<void> _initCamera() async {
     try {
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) return;
+
+      _cameraController = CameraController(
+        cameras.first,
+        ResolutionPreset.high,
+        enableAudio: true,
+      );
       await _cameraController!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      print('Error initializing camera: $e');
+      debugPrint('⚠️ Error inicializando cámara: $e');
     }
   }
 
-  Future<void> _getCurrentLocation() async {
+  // ── Ubicación ────────────────────────────────────────────────────────────────
+
+  Future<void> _fetchLocation() async {
     try {
-      final permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        final granted = await Geolocator.requestPermission();
-        if (granted != LocationPermission.whileInUse &&
-            granted != LocationPermission.always) {
-          return;
-        }
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) {
+        return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
-      setState(() => _currentPosition = position);
-
-      // Por ahora solo usamos las coordenadas como ubicación
+      if (!mounted) return;
       setState(() {
-        _currentLocation = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        _position = pos;
+        _locationLabel =
+            '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}';
       });
     } catch (e) {
-      print('Error getting location: $e');
+      debugPrint('⚠️ Error obteniendo ubicación: $e');
     }
   }
 
-  Future<void> _startRecording() async {
+  // ── Conectividad ─────────────────────────────────────────────────────────────
+
+  Future<void> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 4));
+      setState(() {
+        _hasInternet = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      });
+    } catch (_) {
+      setState(() {
+        _hasInternet = false;
+      });
+    }
+  }
+
+  // ── Grabación ─────────────────────────────────────────────────────────────────
+
+  // ── Grabación y Fase 1 ────────────────────────────────────────────────────────
+  
+  Future<void> _startPanicFlow() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      _showSnack('La cámara no está lista', isError: true);
       return;
     }
 
+    // Fase 1: Enviar alerta inmediata sin video
+    _sendInitialAlert();
+
+    // Iniciar grabación
     try {
-      final directory = await getTemporaryDirectory();
-      final videoPath = '${directory.path}/emergency_video_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      
       await _cameraController!.startVideoRecording();
-      
       setState(() {
         _isRecording = true;
-        _recordingDuration = 0;
-        _recordedVideo = File(videoPath);
+        _recordingSeconds = 0;
       });
 
-      // Timer para duración de grabación
-      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        setState(() {
-          _recordingDuration++;
-        });
-
-        // Detener automáticamente después de 5 minutos
-        if (_recordingDuration >= 300) {
+      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (!mounted) {
+          t.cancel();
+          return;
+        }
+        setState(() => _recordingSeconds++);
+        if (_recordingSeconds >= _kMaxRecordingSeconds) {
           _stopRecording();
         }
       });
     } catch (e) {
-      print('Error starting recording: $e');
+      _showSnack('Error al iniciar la grabación: $e', isError: true);
+    }
+  }
+
+  Future<void> _sendInitialAlert() async {
+    await _checkConnectivity();
+    if (!_hasInternet) {
+      _showSnack('Sin internet: La alerta se guardará localmente.', isError: true);
+      return;
+    }
+
+    try {
+      final alert = await EmergencyService.triggerPanicButton(
+        description: 'Alerta de emergencia activada',
+        latitude: _position?.latitude,
+        longitude: _position?.longitude,
+        location: _locationLabel,
+        metadata: {
+          'deviceInfo': {'platform': Platform.operatingSystem},
+        },
+      );
+      _currentAlertId = alert.id;
+      if (mounted) _showSnack('Alerta enviada a tus contactos.');
+    } catch (e) {
+      _showSnack('Error enviando alerta inicial: $e', isError: true);
     }
   }
 
   Future<void> _stopRecording() async {
     if (_cameraController == null || !_isRecording) return;
+    _recordingTimer?.cancel();
 
     try {
       final videoFile = await _cameraController!.stopVideoRecording();
-      _recordingTimer?.cancel();
-
+      if (!mounted) return;
       setState(() {
         _isRecording = false;
         _recordedVideo = File(videoFile.path);
       });
+      
+      // Fase 2: Subir evidencia
+      _uploadVideoEvidencia();
     } catch (e) {
-      print('Error stopping recording: $e');
+      setState(() => _isRecording = false);
+      _showSnack('Error al detener la grabación: $e', isError: true);
     }
   }
 
-  Future<void> _sendEmergencyAlert() async {
-    if (_currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo obtener la ubicación'),
-          backgroundColor: Colors.red,
-        ),
-      );
+  // ── Fase 2: Subida de evidencia ───────────────────────────────────────────────
+
+  Future<void> _uploadVideoEvidencia() async {
+    if (_recordedVideo == null) return;
+
+    await _checkConnectivity();
+
+    if (!_hasInternet || _currentAlertId == null) {
+      await _saveOffline();
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      print('🚨 Enviando alerta de emergencia...');
-      print('📍 Ubicación: ${_currentLocation}');
-      print('📹 Video: ${_recordedVideo?.path ?? 'No disponible'}');
-      
-      final alert = await EmergencyService.triggerPanicButton(
-        description: 'Alerta de emergencia activada',
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        location: _currentLocation,
-        metadata: {
-          'recordingDuration': _recordingDuration,
-          'deviceInfo': {
-            'platform': Platform.operatingSystem,
-            'version': Platform.operatingSystemVersion,
-          },
-        },
-        videoFile: _recordedVideo,
-      );
-
+      await EmergencyService.attachVideo(_currentAlertId!, _recordedVideo!);
       setState(() => _isLoading = false);
-
-      // Mostrar confirmación
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('🚨 Alerta Enviada'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Tu alerta de emergencia ha sido enviada a todos tus contactos.'),
-                const SizedBox(height: 16),
-                Text('Ubicación: ${_currentLocation ?? 'No disponible'}'),
-                Text('Duración del video: ${_recordingDuration}s'),
-                const SizedBox(height: 16),
-                const Text(
-                  'Mantén la calma. Tus contactos han sido notificados.',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Entendido'),
-              ),
-            ],
-          ),
-        );
-      }
+      if (mounted) _showSuccessDialog();
     } catch (e) {
       setState(() => _isLoading = false);
-      print('❌ Error al enviar alerta: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al enviar alerta: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
+      _showSnack('Error subiendo evidencia: $e', isError: true);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Botón de Pánico'),
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.camera_alt, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
-              Text('Inicializando cámara...'),
-            ],
-          ),
-        ),
-      );
-    }
+  Future<void> _saveOffline() async {
+    final id = const Uuid().v4();
+    final alert = PendingEmergencyAlert(
+      id: id,
+      videoPath: _recordedVideo?.path ?? '',
+      latitude: _position?.latitude,
+      longitude: _position?.longitude,
+      location: _locationLabel,
+      description: 'Alerta de emergencia activada',
+      offlineTimestamp: DateTime.now().toIso8601String(),
+      metadata: {'recordingDuration': _recordingSeconds},
+    );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Botón de Pánico'),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
+    await OfflineEmergencyQueue.enqueue(alert);
+
+    // Lanzar intent de sync para cuando haya internet
+    EmergencySyncService.instance.start();
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(children: [
+          Icon(Icons.wifi_off, color: Colors.orange, size: 28),
+          SizedBox(width: 8),
+          Text('Sin conexión'),
+        ]),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'No hay internet en este momento.',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Tu alerta y evidencia han sido guardadas en el dispositivo. '
+              'Se enviarán automáticamente a tus contactos cuando recuperes conexión.',
+            ),
+            SizedBox(height: 12),
+            Row(children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 18),
+              SizedBox(width: 6),
+              Expanded(child: Text('Grabación guardada localmente')),
+            ]),
+            SizedBox(height: 4),
+            Row(children: [
+              Icon(Icons.sync, color: Colors.blue, size: 18),
+              SizedBox(width: 6),
+              Expanded(child: Text('Se sincronizará automáticamente')),
+            ]),
+          ],
+        ),
         actions: [
-          if (_isRecording)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text('${_recordingDuration}s'),
-                ],
-              ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
             ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Vista previa de la cámara
-          Expanded(
-            flex: 3,
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CameraPreview(_cameraController!),
-              ),
-            ),
-          ),
-
-          // Información de ubicación
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                if (_currentLocation != null) ...[
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _currentLocation!,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                if (_currentPosition != null)
-                  Text(
-                    'Lat: ${_currentPosition!.latitude.toStringAsFixed(6)}, '
-                    'Lng: ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Controles
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                if (!_isRecording && _recordedVideo == null) ...[
-                  // Botón de grabación
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton.icon(
-                      onPressed: _startRecording,
-                      icon: const Icon(Icons.videocam, size: 24),
-                      label: const Text(
-                        'Iniciar Grabación',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ] else if (_isRecording) ...[
-                  // Botón para detener grabación
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton.icon(
-                      onPressed: _stopRecording,
-                      icon: const Icon(Icons.stop, size: 24),
-                      label: const Text(
-                        'Detener Grabación',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ] else if (_recordedVideo != null) ...[
-                  // Botón para enviar alerta
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton.icon(
-                      onPressed: _isLoading ? null : _sendEmergencyAlert,
-                      icon: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.send, size: 24),
-                      label: Text(
-                        _isLoading ? 'Enviando...' : 'Enviar Alerta de Emergencia',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _recordedVideo = null;
-                        _recordingDuration = 0;
-                      });
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Grabar Nuevamente'),
-                  ),
-                ],
-              ],
-            ),
+            child: const Text('Entendido'),
           ),
         ],
       ),
     );
   }
-} 
+
+  // ── UI helpers ────────────────────────────────────────────────────────────────
+
+  void _showSnack(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 5),
+    ));
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(children: [
+          Icon(Icons.check_circle, color: Colors.green, size: 28),
+          SizedBox(width: 8),
+          Text('Alerta Enviada'),
+        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tu alerta de emergencia ha sido enviada.',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (_locationLabel != null)
+              Text('📍 Ubicación: $_locationLabel'),
+            Text('⏱️ Duración de grabación: ${_recordingSeconds}s'),
+            const SizedBox(height: 12),
+            const Text(
+              '📧 Tus contactos recibirán notificación por WhatsApp y email.',
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Mantén la calma. Tus contactos han sido notificados.',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────────
+
+  String _formatTime(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cameraReady =
+        _cameraController != null && _cameraController!.value.isInitialized;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.red.shade800,
+        foregroundColor: Colors.white,
+        title: const Text('🚨 Botón de Pánico'),
+        actions: [
+          if (_isRecording)
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                _BlinkingDot(),
+                const SizedBox(width: 6),
+                Text(
+                  _formatTime(_recordingSeconds),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '/ ${_formatTime(_kMaxRecordingSeconds)}',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
+              ]),
+            ),
+          if (!_hasInternet)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(Icons.wifi_off, color: Colors.orange),
+            ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(children: [
+          // ── Vista previa de cámara
+          Expanded(
+            flex: 3,
+            child: cameraReady
+                ? ClipRect(child: CameraPreview(_cameraController!))
+                : Container(
+                    color: Colors.black,
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.camera_alt, size: 64, color: Colors.white38),
+                          SizedBox(height: 12),
+                          Text('Inicializando cámara...',
+                              style: TextStyle(color: Colors.white54)),
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
+
+          // ── Información de ubicación
+          Container(
+            color: Colors.black87,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(children: [
+              Icon(
+                Icons.location_on,
+                color: _position != null ? Colors.green : Colors.orange,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _locationLabel ?? 'Obteniendo ubicación GPS...',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!_hasInternet)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Chip(
+                    label: Text('Sin internet',
+                        style: TextStyle(fontSize: 11, color: Colors.white)),
+                    backgroundColor: Colors.orange,
+                    padding: EdgeInsets.zero,
+                  ),
+                ),
+            ]),
+          ),
+
+          // ── Controles
+          Container(
+            color: Colors.grey.shade900,
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: _buildControls(),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildControls() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          CircularProgressIndicator(color: Colors.red),
+          SizedBox(height: 12),
+          Text('Enviando alerta...', style: TextStyle(color: Colors.white70)),
+        ]),
+      );
+    }
+
+    if (!_isRecording && _recordedVideo == null) {
+      // Estado inicial: botón pánico
+      return _PanicButton(
+        label: 'Activar Pánico',
+        icon: Icons.warning,
+        color: Colors.red,
+        onTap: _startPanicFlow,
+      );
+    }
+
+    if (_isRecording) {
+      // Grabando: botón detener + barra de progreso
+      return Column(children: [
+        // Barra de progreso
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: _recordingSeconds / _kMaxRecordingSeconds,
+            backgroundColor: Colors.grey.shade700,
+            color: _recordingSeconds > _kMaxRecordingSeconds * 0.8
+                ? Colors.orange
+                : Colors.red,
+            minHeight: 8,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Grabando evidencia ${_formatTime(_recordingSeconds)} / ${_formatTime(_kMaxRecordingSeconds)}',
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        _PanicButton(
+          label: 'Detener y Enviar Evidencia',
+          icon: Icons.stop,
+          color: Colors.orange,
+          onTap: _stopRecording,
+        ),
+      ]);
+    }
+
+    // Video listo (este estado ocurre si falla la subida y se queda ahí)
+    return Column(children: [
+      Row(children: [
+        const Icon(Icons.check_circle, color: Colors.green, size: 18),
+        const SizedBox(width: 8),
+        Text(
+          'Video listo (${_recordingSeconds}s)',
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+      ]),
+      const SizedBox(height: 16),
+      _PanicButton(
+        label: _hasInternet
+            ? 'Reintentar Subir Evidencia'
+            : 'Guardar y Enviar Después',
+        icon: _hasInternet ? Icons.cloud_upload : Icons.save,
+        color: Colors.red,
+        onTap: _uploadVideoEvidencia,
+      ),
+      const SizedBox(height: 10),
+      TextButton.icon(
+        onPressed: () => setState(() {
+          _recordedVideo = null;
+          _recordingSeconds = 0;
+          _currentAlertId = null;
+        }),
+        icon: const Icon(Icons.refresh, color: Colors.white54),
+        label: const Text('Comenzar nueva alerta',
+            style: TextStyle(color: Colors.white54)),
+      ),
+    ]);
+  }
+}
+
+// ── Widgets auxiliares ────────────────────────────────────────────────────────
+
+class _PanicButton extends StatelessWidget {
+  const _PanicButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 22),
+        label: Text(label, style: const TextStyle(fontSize: 17)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 4,
+        ),
+      ),
+    );
+  }
+}
+
+class _BlinkingDot extends StatefulWidget {
+  @override
+  State<_BlinkingDot> createState() => _BlinkingDotState();
+}
+
+class _BlinkingDotState extends State<_BlinkingDot>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _ctrl,
+      child: const CircleAvatar(
+          radius: 5, backgroundColor: Colors.red),
+    );
+  }
+}
