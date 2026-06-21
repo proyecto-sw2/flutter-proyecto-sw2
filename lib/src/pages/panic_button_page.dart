@@ -130,6 +130,8 @@ class _PanicButtonPageState extends State<PanicButtonPage>
 
   // ── Grabación y Fase 1 ────────────────────────────────────────────────────────
   
+  Future<void>? _initialAlertFuture;
+
   Future<void> _startPanicFlow() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       _showSnack('La cámara no está lista', isError: true);
@@ -137,7 +139,7 @@ class _PanicButtonPageState extends State<PanicButtonPage>
     }
 
     // Fase 1: Enviar alerta inmediata sin video
-    _sendInitialAlert();
+    _initialAlertFuture = _sendInitialAlert();
 
     // Iniciar grabación
     try {
@@ -211,14 +213,20 @@ class _PanicButtonPageState extends State<PanicButtonPage>
   Future<void> _uploadVideoEvidencia() async {
     if (_recordedVideo == null) return;
 
+    setState(() => _isLoading = true);
+
+    // Esperar a que termine la Fase 1 si aún está en progreso
+    if (_initialAlertFuture != null) {
+      await _initialAlertFuture;
+    }
+
     await _checkConnectivity();
 
     if (!_hasInternet || _currentAlertId == null) {
+      setState(() => _isLoading = false);
       await _saveOffline();
       return;
     }
-
-    setState(() => _isLoading = true);
 
     try {
       await EmergencyService.attachVideo(_currentAlertId!, _recordedVideo!);

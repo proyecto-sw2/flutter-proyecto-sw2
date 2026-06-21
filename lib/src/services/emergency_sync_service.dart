@@ -64,12 +64,20 @@ class EmergencySyncService {
     debugPrint('📡 Sincronizando ${pending.length} alerta(s) offline...');
 
     for (final alert in pending) {
+      if (alert.maxRetriesReached) {
+        await OfflineEmergencyQueue.remove(alert.id);
+        debugPrint('🗑️ Alerta ${alert.id} descartada tras ${PendingEmergencyAlert.maxRetries} intentos fallidos');
+        continue;
+      }
+
       final success = await _syncAlert(alert);
       if (success) {
         await OfflineEmergencyQueue.remove(alert.id);
         debugPrint('✅ Alerta ${alert.id} sincronizada y removida de la cola');
       } else {
-        debugPrint('⚠️ Alerta ${alert.id} fallida, permanece en cola');
+        final updated = alert.incrementRetry();
+        await OfflineEmergencyQueue.updateRetry(updated);
+        debugPrint('⚠️ Alerta ${alert.id} fallida (intento ${updated.retryCount}/${PendingEmergencyAlert.maxRetries})');
       }
     }
 
