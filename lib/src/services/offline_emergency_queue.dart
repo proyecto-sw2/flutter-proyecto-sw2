@@ -4,13 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Representa una alerta de emergencia generada sin internet.
 class PendingEmergencyAlert {
   final String id;
-  final String videoPath; // Ruta local del video grabado
+  final String videoPath;
   final double? latitude;
   final double? longitude;
   final String? location;
   final String? description;
   final String offlineTimestamp; // ISO 8601
   final Map<String, dynamic>? metadata;
+  final int retryCount;
+
+  static const int maxRetries = 3;
 
   PendingEmergencyAlert({
     required this.id,
@@ -21,7 +24,22 @@ class PendingEmergencyAlert {
     this.description,
     required this.offlineTimestamp,
     this.metadata,
+    this.retryCount = 0,
   });
+
+  PendingEmergencyAlert incrementRetry() => PendingEmergencyAlert(
+        id: id,
+        videoPath: videoPath,
+        latitude: latitude,
+        longitude: longitude,
+        location: location,
+        description: description,
+        offlineTimestamp: offlineTimestamp,
+        metadata: metadata,
+        retryCount: retryCount + 1,
+      );
+
+  bool get maxRetriesReached => retryCount >= maxRetries;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -32,18 +50,20 @@ class PendingEmergencyAlert {
         'description': description,
         'offlineTimestamp': offlineTimestamp,
         'metadata': metadata,
+        'retryCount': retryCount,
       };
 
   factory PendingEmergencyAlert.fromJson(Map<String, dynamic> json) =>
       PendingEmergencyAlert(
         id: json['id'] as String,
         videoPath: json['videoPath'] as String,
-        latitude: (json['latitude'] as num?)?.toDouble(),
-        longitude: (json['longitude'] as num?)?.toDouble(),
+        latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+        longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
         location: json['location'] as String?,
         description: json['description'] as String?,
         offlineTimestamp: json['offlineTimestamp'] as String,
         metadata: json['metadata'] as Map<String, dynamic>?,
+        retryCount: (json['retryCount'] as int?) ?? 0,
       );
 }
 
@@ -83,6 +103,17 @@ class OfflineEmergencyQueue {
   static Future<int> getPendingCount() async {
     final prefs = await SharedPreferences.getInstance();
     return _loadList(prefs).length;
+  }
+
+  /// Actualiza el retryCount de una alerta en la cola.
+  static Future<void> updateRetry(PendingEmergencyAlert updated) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = _loadList(prefs);
+    final idx = list.indexWhere((e) => (e as Map)['id'] == updated.id);
+    if (idx != -1) {
+      list[idx] = updated.toJson();
+      await prefs.setString(_key, jsonEncode(list));
+    }
   }
 
   /// Limpia toda la cola (uso interno / debug).
