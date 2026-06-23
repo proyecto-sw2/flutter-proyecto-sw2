@@ -246,7 +246,12 @@ class _PanicButtonPageState extends State<PanicButtonPage>
         localSignature: _localSignature,
         publicKey: _localPublicKey,
       );
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _recordedVideo = null;
+        _recordingSeconds = 0;
+        _currentAlertId = null;
+      });
       if (mounted) _showSuccessDialog();
     } catch (e) {
       setState(() => _isLoading = false);
@@ -345,6 +350,7 @@ class _PanicButtonPageState extends State<PanicButtonPage>
   void _showSuccessDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(children: [
