@@ -7,6 +7,8 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_sw1/src/services/emergency_service.dart';
 import 'package:flutter_sw1/src/services/offline_emergency_queue.dart';
 import 'package:flutter_sw1/src/services/emergency_sync_service.dart';
+import 'package:flutter_sw1/src/theme/app_colors.dart';
+import 'package:flutter_sw1/src/services/local_evidence_service.dart';
 
 const int _kMaxRecordingSeconds = 900; // 15 minutos (CU01)
 
@@ -30,6 +32,8 @@ class _PanicButtonPageState extends State<PanicButtonPage>
   int _recordingSeconds = 0;
   Timer? _recordingTimer;
   int? _currentAlertId;
+  String? _localSignature;
+  String? _localPublicKey;
 
   // ── Ubicación ───────────────────────────────────────────────────────────────
   Position? _position;
@@ -195,9 +199,16 @@ class _PanicButtonPageState extends State<PanicButtonPage>
     try {
       final videoFile = await _cameraController!.stopVideoRecording();
       if (!mounted) return;
+      
+      // Guardar y firmar localmente (HU02)
+      final localEvidence = await LocalEvidenceService.saveAndSignVideo(File(videoFile.path));
+      final pubKey = await LocalEvidenceService.getPublicKey();
+
       setState(() {
         _isRecording = false;
-        _recordedVideo = File(videoFile.path);
+        _recordedVideo = File(localEvidence.path);
+        _localSignature = localEvidence.signature;
+        _localPublicKey = pubKey;
       });
       
       // Fase 2: Subir evidencia
@@ -229,7 +240,12 @@ class _PanicButtonPageState extends State<PanicButtonPage>
     }
 
     try {
-      await EmergencyService.attachVideo(_currentAlertId!, _recordedVideo!);
+      await EmergencyService.attachVideo(
+        _currentAlertId!,
+        _recordedVideo!,
+        localSignature: _localSignature,
+        publicKey: _localPublicKey,
+      );
       setState(() => _isLoading = false);
       if (mounted) _showSuccessDialog();
     } catch (e) {
@@ -248,7 +264,11 @@ class _PanicButtonPageState extends State<PanicButtonPage>
       location: _locationLabel,
       description: 'Alerta de emergencia activada',
       offlineTimestamp: DateTime.now().toIso8601String(),
-      metadata: {'recordingDuration': _recordingSeconds},
+      metadata: {
+        'recordingDuration': _recordingSeconds,
+        'local_signature': _localSignature,
+        'public_key': _localPublicKey,
+      },
     );
 
     await OfflineEmergencyQueue.enqueue(alert);
@@ -388,7 +408,7 @@ class _PanicButtonPageState extends State<PanicButtonPage>
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.red.shade800,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         title: const Text('🚨 Botón de Pánico'),
         actions: [

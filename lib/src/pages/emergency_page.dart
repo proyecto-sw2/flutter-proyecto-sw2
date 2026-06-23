@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/emergency_contacts_page.dart';
 import 'package:flutter_sw1/src/pages/panic_button_page.dart';
+import 'package:flutter_sw1/src/pages/emergency_history_page.dart';
+import 'package:flutter_sw1/src/pages/local_evidences_page.dart';
 import 'package:flutter_sw1/src/services/emergency_sync_service.dart';
 import 'package:flutter_sw1/src/services/offline_emergency_queue.dart';
+import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:animate_do/animate_do.dart';
 
 class EmergencyPage extends StatefulWidget {
@@ -41,7 +44,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('🚨 Emergencia'),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -58,7 +61,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.red.shade50, Colors.white],
+            colors: [Colors.grey.shade100!, Colors.white],
           ),
         ),
         child: SingleChildScrollView(
@@ -137,13 +140,28 @@ class _EmergencyPageState extends State<EmergencyPage> {
                       title: 'Historial',
                       subtitle: 'Ver alertas anteriores',
                       color: Colors.orange,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Historial próximamente disponible')),
-                      ),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const EmergencyHistoryPage())),
                     ).fadeInRight(duration: const Duration(milliseconds: 700)),
                   ),
                 ]),
+
+                const SizedBox(height: 12),
+
+                // Nuevo Botón de Evidencias Locales (HU02)
+                _buildOption(
+                  context,
+                  icon: Icons.video_library,
+                  title: 'Mis Evidencias',
+                  subtitle: 'Videos firmados localmente',
+                  color: Colors.teal,
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const LocalEvidencesPage())),
+                ).fadeInUp(duration: const Duration(milliseconds: 800)),
 
                 const SizedBox(height: 20),
 
@@ -200,7 +218,6 @@ class _EmergencyPageState extends State<EmergencyPage> {
     required VoidCallback onTap,
   }) {
     return Container(
-      height: 100,
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -246,7 +263,7 @@ class _EmergencyPageState extends State<EmergencyPage> {
         title: const Row(children: [
           Icon(Icons.warning, color: Colors.red, size: 28),
           SizedBox(width: 8),
-          Text('Confirmar Emergencia'),
+          Expanded(child: Text('Confirmar Emergencia')),
         ]),
         content: const Column(
           mainAxisSize: MainAxisSize.min,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sw1/src/pages/chat_page.dart';
 import 'package:flutter_sw1/src/pages/community_page.dart';
 import 'package:flutter_sw1/src/pages/emergency_page.dart';
+import 'package:flutter_sw1/src/pages/mis_incidentes_page.dart';
+import 'package:flutter_sw1/src/pages/public_verification_page.dart';
 import 'package:flutter_sw1/src/pages/profile_page.dart';
 import 'package:flutter_sw1/src/pages/incident_page.dart';
 import 'package:flutter_sw1/src/pages/quiz_page.dart';
@@ -186,6 +188,35 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                     ).backInRight(duration: const Duration(milliseconds: 700)),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildOptionCard(
+                      icon: Icons.assignment,
+                      title: 'Mis Reportes',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MisIncidentesPage(),
+                          ),
+                        );
+                      },
+                    ).backInLeft(duration: const Duration(milliseconds: 800)),
+                    _buildOptionCard(
+                      icon: Icons.verified_user,
+                      title: 'Verificar',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PublicVerificationPage(),
+                          ),
+                        );
+                      },
+                    ).backInRight(duration: const Duration(milliseconds: 800)),
                   ],
                 ),
                 const SizedBox(height: 16),

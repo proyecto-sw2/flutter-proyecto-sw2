@@ -13,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class IncidentPage extends StatefulWidget {
   final LatLng? initialTarget;
@@ -33,6 +34,8 @@ class _IncidentPageState extends State<IncidentPage> {
   LatLng? _currentPosition;
   final Map<String, BitmapDescriptor> _markerIcons = {};
   bool _isPublic = true;
+  XFile? _selectedImage;
+
   @override
   void initState() {
     super.initState();
@@ -130,6 +133,16 @@ class _IncidentPageState extends State<IncidentPage> {
     _mapController = controller;
   }
 
+  Future<void> _pickImage(ImageSource source, StateSetter setModalState) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setModalState(() {
+        _selectedImage = pickedFile;
+      });
+    }
+  }
+
   void _showMarkerDialog() {
     showModalBottomSheet(
       context: context,
@@ -196,7 +209,7 @@ class _IncidentPageState extends State<IncidentPage> {
                     ),
                     const SizedBox(height: 16),
                     CheckboxListTile(
-                      title: const Text('Publicar'),
+                      title: const Text('Publicar en la comunidad'),
                       value: _isPublic,
                       onChanged: (bool? value) {
                         setModalState(() {
@@ -204,6 +217,32 @@ class _IncidentPageState extends State<IncidentPage> {
                         });
                       },
                     ),
+                    if (_isPublic) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => _pickImage(ImageSource.camera, setModalState),
+                            icon: const Icon(Icons.camera_alt),
+                            label: const Text('Cámara'),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () => _pickImage(ImageSource.gallery, setModalState),
+                            icon: const Icon(Icons.photo_library),
+                            label: const Text('Galería'),
+                          ),
+                        ],
+                      ),
+                      if (_selectedImage != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Imagen: ${_selectedImage!.name}',
+                          style: const TextStyle(color: Colors.green, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -300,6 +339,7 @@ class _IncidentPageState extends State<IncidentPage> {
             incidente.tipoIncidente,
             incidente.descripcion,
             incidente.idIncidente,
+            file: _selectedImage,
           );
         }
       } catch (e) {
@@ -329,6 +369,7 @@ class _IncidentPageState extends State<IncidentPage> {
     setState(() {
       _markers.add(marker);
       _descController.clear();
+      _selectedImage = null;
     });
   }
 
