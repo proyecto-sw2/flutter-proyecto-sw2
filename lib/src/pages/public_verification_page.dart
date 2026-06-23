@@ -58,9 +58,9 @@ class _PublicVerificationPageState extends State<PublicVerificationPage> {
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
+    try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo abrir el enlace')),
       );
@@ -156,7 +156,25 @@ class _PublicVerificationPageState extends State<PublicVerificationPage> {
                           _buildDetailRow('Descripción:', _result!['descripcion'] ?? 'No disponible'),
                           _buildDetailRow('Coordenadas GPS:', _result!['gps'] ?? 'No disponible'),
                           _buildDetailRow('Fecha/Hora (Timestamp):', _result!['timestamp_bd'] != null ? DateTime.parse(_result!['timestamp_bd']).toLocal().toString() : 'No disponible'),
-                          _buildDetailRow('Estado Blockchain:', (_result!['estado_confirmacion'] ?? 'Desconocido').toUpperCase()),
+                          const SizedBox(height: 12),
+                          const Text('Estado Blockchain:', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                          Text(_result!['estado_confirmacion']?.toString().toUpperCase() ?? 'PENDIENTE', style: const TextStyle(fontSize: 16)),
+                          
+                          if (_result!['video_url'] != null) ...[
+                            const SizedBox(height: 12),
+                            const Text('Evidencia Multimedia:', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            ElevatedButton.icon(
+                              onPressed: () => _launchUrl(_result!['video_url']),
+                              icon: const Icon(Icons.video_library),
+                              label: const Text('Ver Video de Evidencia'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                          
                           if (_result!['error'] != null)
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),

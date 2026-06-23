@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 enum AlertStatus {
   active,
   resolved,
@@ -73,7 +75,7 @@ class EmergencyAlert {
       videoUrl: json['videoUrl'],
       audioUrl: json['audioUrl'],
       duration: json['duration'] ?? 0,
-      metadata: json['metadata'],
+      metadata: _parseMetadata(json['metadata']),
       docHash: json['doc_hash'],
       txHash: json['tx_hash'],
       blockchainStatus: json['blockchain_status'] ?? 'sin_registro',
@@ -145,5 +147,18 @@ class EmergencyAlert {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  static Map<String, dynamic>? _parseMetadata(dynamic data) {
+    if (data == null) return null;
+    if (data is Map<String, dynamic>) return data;
+    if (data is String) {
+      try {
+        return jsonDecode(data);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
   }
 } 
