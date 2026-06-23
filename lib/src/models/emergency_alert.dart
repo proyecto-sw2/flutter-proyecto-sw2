@@ -22,6 +22,10 @@ class EmergencyAlert {
   final String? audioUrl;
   final int duration;
   final Map<String, dynamic>? metadata;
+  final String? docHash;
+  final String? txHash;
+  final String blockchainStatus;
+  final String? certificadoUrl;
   final DateTime? resolvedAt;
   final String? resolutionNotes;
   final int userId;
@@ -40,6 +44,10 @@ class EmergencyAlert {
     this.audioUrl,
     required this.duration,
     this.metadata,
+    this.docHash,
+    this.txHash,
+    this.blockchainStatus = 'sin_registro',
+    this.certificadoUrl,
     this.resolvedAt,
     this.resolutionNotes,
     required this.userId,
@@ -66,6 +74,10 @@ class EmergencyAlert {
       audioUrl: json['audioUrl'],
       duration: json['duration'] ?? 0,
       metadata: json['metadata'],
+      docHash: json['doc_hash'],
+      txHash: json['tx_hash'],
+      blockchainStatus: json['blockchain_status'] ?? 'sin_registro',
+      certificadoUrl: json['certificado_url'],
       resolvedAt: json['resolvedAt'] != null 
           ? DateTime.parse(json['resolvedAt']) 
           : null,

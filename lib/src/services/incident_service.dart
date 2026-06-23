@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_sw1/src/config/config.dart';
 import 'package:flutter_sw1/src/models/incident.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -27,7 +28,7 @@ Future<Incidente?> crearIncidente(String tipo, String desc, LatLng latLon) async
       },
       body: jsonEncode({
         'tipo_incidente': tipo,
-        'descripcion': desc.length < 10 ? 'Sin descripción' : desc,
+        'descripcion': desc.isEmpty ? 'Sin descripción' : desc,
         'latitud_longitud': latLngString,
       }),
     );
@@ -76,6 +77,70 @@ Future<Incidentes?> getIncidentes() async {
   } catch (e) {
     print('❌ Error de red o inesperado: $e');
     return null;
+  }
+}
+
+Future<List<Incidente>> getMisIncidentes() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final url = ApiConfig.baseUrl;
+  final token = prefs.getString('auth_token') ?? '';
+
+  if (token.isEmpty) return [];
+
+  try {
+    final response = await http.get(
+      Uri.parse('$url/incidentes/mis-incidentes'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((x) => Incidente.fromJson(x)).toList();
+    }
+  } catch (e) {
+    print('❌ Error al obtener mis incidentes: $e');
+  }
+  return [];
+}
+
+/// Descarga el certificado PDF de un incidente.
+/// Devuelve los bytes del PDF, o null si está pendiente (con [pendienteMsg]).
+Future<({Uint8List? bytes, String? pendienteMsg})> descargarCertificado(
+    int incidenteId) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final url = ApiConfig.baseUrl;
+  final token = prefs.getString('auth_token') ?? '';
+
+  if (token.isEmpty) {
+    return (bytes: null, pendienteMsg: 'Sin sesión activa.');
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$url/incidentes/$incidenteId/certificado'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      return (bytes: response.bodyBytes, pendienteMsg: null);
+    }
+
+    if (response.statusCode == 202) {
+      final data = jsonDecode(response.body);
+      return (
+        bytes: null,
+        pendienteMsg: data['message'] as String? ??
+            'El certificado estará disponible cuando la transacción sea confirmada.'
+      );
+    }
+
+    final data = jsonDecode(response.body);
+    throw Exception(data['message'] ?? 'Error al obtener el certificado');
+  } catch (e) {
+    rethrow;
   }
 }
 

@@ -169,10 +169,42 @@ class EmergencyService {
 
   static Future<List<EmergencyAlert>> getEmergencyAlerts() async {
     final token = await _getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final cacheKey = 'emergency_alerts_cache';
 
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/emergency/alerts'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode == 200) {
+        prefs.setString(cacheKey, response.body);
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((j) => EmergencyAlert.fromJson(j)).toList();
+      }
+      throw Exception(_safeErrorMessage(response));
+    } catch (e) {
+      final cachedData = prefs.getString(cacheKey);
+      if (cachedData != null) {
+        final List<dynamic> jsonList = jsonDecode(cachedData);
+        return jsonList.map((j) => EmergencyAlert.fromJson(j)).toList();
+      }
+      throw Exception('Sin conexión a internet y sin historial guardado localmente.');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getEmergencyCertificate(int id) async {
+    final token = await _getToken();
+    
     final response = await http
         .get(
-          Uri.parse('$baseUrl/emergency/alerts'),
+          Uri.parse('$baseUrl/emergency/alerts/$id/certificado'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -181,8 +213,7 @@ class EmergencyService {
         .timeout(_timeout);
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = jsonDecode(response.body);
-      return jsonList.map((j) => EmergencyAlert.fromJson(j)).toList();
+      return jsonDecode(response.body);
     }
     throw Exception(_safeErrorMessage(response));
   }
@@ -253,7 +284,12 @@ class EmergencyService {
   }
 
   /// Fase 2: Sube el video y lo asocia a una alerta existente
-  static Future<EmergencyAlert> attachVideo(int alertId, File videoFile) async {
+  static Future<EmergencyAlert> attachVideo(
+    int alertId,
+    File videoFile, {
+    String? localSignature,
+    String? publicKey,
+  }) async {
     final token = await _getToken();
 
     final request = http.MultipartRequest(
@@ -261,6 +297,13 @@ class EmergencyService {
       Uri.parse('$baseUrl/emergency/alerts/$alertId/video'),
     );
     request.headers['Authorization'] = 'Bearer $token';
+
+    if (localSignature != null) {
+      request.fields['local_signature'] = localSignature;
+    }
+    if (publicKey != null) {
+      request.fields['public_key'] = publicKey;
+    }
 
     request.files.add(await http.MultipartFile.fromPath(
       'video',

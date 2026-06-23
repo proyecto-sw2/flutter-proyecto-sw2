@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_sw1/src/models/user.dart';
 import 'package:flutter_sw1/src/pages/home_page.dart';
 import 'package:flutter_sw1/src/pages/register_page.dart';
+import 'package:flutter_sw1/src/pages/public_verification_page.dart';
 import 'package:flutter_sw1/src/providers/user_provider.dart';
 import 'package:flutter_sw1/src/theme/app_colors.dart';
 import 'package:flutter_sw1/src/config/config.dart';
@@ -337,7 +338,30 @@ class LoginPageState extends ConsumerState<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 60),
+              const SizedBox(height: 20),
+
+              // Botón Verificar Reporte Público
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PublicVerificationPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.verified_user, color: AppColors.primary),
+                label: const Text(
+                  'Verificar reporte en Blockchain',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),

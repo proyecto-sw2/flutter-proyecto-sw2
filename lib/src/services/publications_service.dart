@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PublicationsService {
   static Future<String?> _getToken() async {
@@ -177,7 +178,7 @@ class PublicationsService {
     }
   }
 
-  static Future<void> createPubMaps(String titulo, String desc, int id) async {
+  static Future<void> createPubMaps(String titulo, String desc, int id, {XFile? file}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final url = ApiConfig.baseUrl;
     final uri = Uri.parse('$url/publicaciones');
@@ -190,17 +191,19 @@ class PublicationsService {
     }
 
     try {
-      final response = await http.post(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'contenido_texto': contenidoTexto,
-          'id_incidente': id,
-        }),
-      );
+      final request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['contenido_texto'] = contenidoTexto;
+      request.fields['id_incidente'] = id.toString();
+
+      if (file != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('file', file.path),
+        );
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {
         print('✅ Publicacion creada exitosamente');
